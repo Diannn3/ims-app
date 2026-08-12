@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Math Building — Ground Floor</title>
+  <desc id="desc">Prototype semantic floor plan reconstructed from the provided orientation poster. Verify geometry on site before production routing.</desc>
+  <style>
+    :root { color-scheme: light; }
+    .bg { fill: #f8f5ee; }
+    .hallway { fill: #efe0a6; stroke: #c8a94c; stroke-width: 3; }
+    .space { fill: #f8fbff; stroke: #172554; stroke-width: 5; }
+    .space-service, .space-lab { fill: #e8eefc; }
+    .space-toilet { fill: #f4f0ff; }
+    .space-stairs, .space-entrance { fill: #edf1f7; }
+    .space-label { fill: #172554; font-family: Inter, system-ui, sans-serif; font-weight: 750; font-size: 22px; pointer-events: none; }
+    .space-stairs .space-label, .space-toilet .space-label, .space-entrance .space-label { font-size: 15px; }
+    .floor-title { fill: #172554; font-family: Inter, system-ui, sans-serif; font-size: 34px; font-weight: 800; }
+    .prototype { fill: #7c6f52; font-family: Inter, system-ui, sans-serif; font-size: 16px; }
+  </style>
+  <rect class="bg" width="1200" height="760" />
+  <text class="floor-title" x="70" y="70">Ground Floor</text>
+  <text class="prototype" x="70" y="98">Schematic prototype — site verification required</text>
+  <path class="hallway" d="M105 320 H1085 V445 H170 V420 H105 Z" opacity="0.92" />
+  
+      <g id="space-mb100" data-space-id="mb100" data-kind="classroom">
+        <rect class="space space-classroom" x="120" y="145" width="145" height="185" rx="16" />
+        <text class="space-label" x="192.5" y="237.5" text-anchor="middle"><tspan x="192.5" dy="0">MB 100</tspan></text>
+      </g>
+
+      <g id="space-mb101a" data-space-id="mb101a" data-kind="classroom">
+        <rect class="space space-classroom" x="280" y="145" width="165" height="95" rx="16" />
+        <text class="space-label" x="362.5" y="192.5" text-anchor="middle"><tspan x="362.5" dy="0">MB 101A</tspan></text>
+      </g>
+
+      <g id="space-mb101b" data-space-id="mb101b" data-kind="classroom">
+        <rect class="space space-classroom" x="455" y="145" width="165" height="95" rx="16" />
+        <text class="space-label" x="537.5" y="192.5" text-anchor="middle"><tspan x="537.5" dy="0">MB 101B</tspan></text>
+      </g>
+
+      <g id="space-mb103a" data-space-id="mb103a" data-kind="classroom">
+        <rect class="space space-classroom" x="630" y="145" width="165" height="95" rx="16" />
+        <text class="space-label" x="712.5" y="192.5" text-anchor="middle"><tspan x="712.5" dy="0">MB 103A</tspan></text>
+      </g>
+
+      <g id="space-mb103b" data-space-id="mb103b" data-kind="classroom">
+        <rect class="space space-classroom" x="805" y="145" width="165" height="95" rx="16" />
+        <text class="space-label" x="887.5" y="192.5" text-anchor="middle"><tspan x="887.5" dy="0">MB 103B</tspan></text>
+      </g>
+
+      <g id="space-mb102" data-space-id="mb102" data-kind="lab">
+        <rect class="space space-lab" x="330" y="455" width="175" height="105" rx="16" />
+        <text class="space-label" x="417.5" y="497.5" text-anchor="middle"><tspan x="417.5" dy="0">MB 102</tspan><tspan x="417.5" dy="22">Math Lab</tspan></text>
+      </g>
+
+      <g id="space-mb104" data-space-id="mb104" data-kind="classroom">
+        <rect class="space space-classroom" x="635" y="455" width="190" height="105" rx="16" />
+        <text class="space-label" x="730" y="507.5" text-anchor="middle"><tspan x="730" dy="0">MB 104</tspan></text>
+      </g>
+
+      <g id="space-gf-men-toilet" data-space-id="gf-men-toilet" data-kind="toilet">
+        <rect class="space space-toilet" x="900" y="450" width="95" height="110" rx="16" />
+        <text class="space-label" x="947.5" y="495" text-anchor="middle"><tspan x="947.5" dy="0">Men's</tspan><tspan x="947.5" dy="22">Toilet</tspan></text>
+      </g>
+
+      <g id="space-gf-women-toilet" data-space-id="gf-women-toilet" data-kind="toilet">
+        <rect class="space space-toilet" x="1000" y="450" width="105" height="110" rx="16" />
+        <text class="space-label" x="1052.5" y="495" text-anchor="middle"><tspan x="1052.5" dy="0">Women's</tspan><tspan x="1052.5" dy="22">Toilet</tspan></text>
+      </g>
+
+      <g id="space-gf-west-stairs" data-space-id="gf-west-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="90" y="340" width="70" height="80" rx="16" />
+        <text class="space-label" x="125" y="370" text-anchor="middle"><tspan x="125" dy="0">West</tspan><tspan x="125" dy="22">Stairs</tspan></text>
+      </g>
+
+      <g id="space-gf-center-stairs" data-space-id="gf-center-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="475" y="365" width="75" height="72" rx="16" />
+        <text class="space-label" x="512.5" y="391" text-anchor="middle"><tspan x="512.5" dy="0">Center</tspan><tspan x="512.5" dy="22">Stairs</tspan></text>
+      </g>
+
+      <g id="space-gf-east-stairs" data-space-id="gf-east-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="1080" y="310" width="70" height="80" rx="16" />
+        <text class="space-label" x="1115" y="340" text-anchor="middle"><tspan x="1115" dy="0">East</tspan><tspan x="1115" dy="22">Stairs</tspan></text>
+      </g>
+
+      <g id="space-gf-main-entrance-space" data-space-id="gf-main-entrance-space" data-kind="entrance">
+        <rect class="space space-entrance" x="25" y="330" width="70" height="95" rx="16" />
+        <text class="space-label" x="60" y="377.5" text-anchor="middle"><tspan x="60" dy="0">Main Entrance</tspan></text>
+      </g>
+</svg>

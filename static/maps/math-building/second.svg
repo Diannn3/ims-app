@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Math Building — Second Floor</title>
+  <desc id="desc">Prototype semantic floor plan reconstructed from the provided orientation poster. Verify geometry on site before production routing.</desc>
+  <style>
+    :root { color-scheme: light; }
+    .bg { fill: #f8f5ee; }
+    .hallway { fill: #efe0a6; stroke: #c8a94c; stroke-width: 3; }
+    .space { fill: #f8fbff; stroke: #172554; stroke-width: 5; }
+    .space-service, .space-lab { fill: #e8eefc; }
+    .space-toilet { fill: #f4f0ff; }
+    .space-stairs, .space-entrance { fill: #edf1f7; }
+    .space-label { fill: #172554; font-family: Inter, system-ui, sans-serif; font-weight: 750; font-size: 22px; pointer-events: none; }
+    .space-stairs .space-label, .space-toilet .space-label, .space-entrance .space-label { font-size: 15px; }
+    .floor-title { fill: #172554; font-family: Inter, system-ui, sans-serif; font-size: 34px; font-weight: 800; }
+    .prototype { fill: #7c6f52; font-family: Inter, system-ui, sans-serif; font-size: 16px; }
+  </style>
+  <rect class="bg" width="1200" height="760" />
+  <text class="floor-title" x="70" y="70">Second Floor</text>
+  <text class="prototype" x="70" y="98">Schematic prototype — site verification required</text>
+  <path class="hallway" d="M105 320 H1085 V445 H170 V420 H105 Z" opacity="0.92" />
+  
+      <g id="space-mb201" data-space-id="mb201" data-kind="classroom">
+        <rect class="space space-classroom" x="155" y="145" width="150" height="100" rx="16" />
+        <text class="space-label" x="230" y="195" text-anchor="middle"><tspan x="230" dy="0">MB 201</tspan></text>
+      </g>
+
+      <g id="space-mb203" data-space-id="mb203" data-kind="classroom">
+        <rect class="space space-classroom" x="315" y="145" width="160" height="100" rx="16" />
+        <text class="space-label" x="395" y="195" text-anchor="middle"><tspan x="395" dy="0">MB 203</tspan></text>
+      </g>
+
+      <g id="space-mb205" data-space-id="mb205" data-kind="classroom">
+        <rect class="space space-classroom" x="485" y="145" width="165" height="100" rx="16" />
+        <text class="space-label" x="567.5" y="195" text-anchor="middle"><tspan x="567.5" dy="0">MB 205</tspan></text>
+      </g>
+
+      <g id="space-mb207" data-space-id="mb207" data-kind="classroom">
+        <rect class="space space-classroom" x="660" y="145" width="165" height="100" rx="16" />
+        <text class="space-label" x="742.5" y="195" text-anchor="middle"><tspan x="742.5" dy="0">MB 207</tspan></text>
+      </g>
+
+      <g id="space-mb209" data-space-id="mb209" data-kind="service">
+        <rect class="space space-service" x="835" y="145" width="165" height="100" rx="16" />
+        <text class="space-label" x="917.5" y="185" text-anchor="middle"><tspan x="917.5" dy="0">MB 209</tspan><tspan x="917.5" dy="22">Math Clinic</tspan></text>
+      </g>
+
+      <g id="space-mb202" data-space-id="mb202" data-kind="classroom">
+        <rect class="space space-classroom" x="110" y="455" width="145" height="105" rx="16" />
+        <text class="space-label" x="182.5" y="507.5" text-anchor="middle"><tspan x="182.5" dy="0">MB 202</tspan></text>
+      </g>
+
+      <g id="space-mb204" data-space-id="mb204" data-kind="classroom">
+        <rect class="space space-classroom" x="330" y="455" width="115" height="105" rx="16" />
+        <text class="space-label" x="387.5" y="507.5" text-anchor="middle"><tspan x="387.5" dy="0">MB 204</tspan></text>
+      </g>
+
+      <g id="space-mb206" data-space-id="mb206" data-kind="classroom">
+        <rect class="space space-classroom" x="455" y="455" width="105" height="105" rx="16" />
+        <text class="space-label" x="507.5" y="507.5" text-anchor="middle"><tspan x="507.5" dy="0">MB 206</tspan></text>
+      </g>
+
+      <g id="space-mb208" data-space-id="mb208" data-kind="classroom">
+        <rect class="space space-classroom" x="570" y="455" width="105" height="105" rx="16" />
+        <text class="space-label" x="622.5" y="507.5" text-anchor="middle"><tspan x="622.5" dy="0">MB 208</tspan></text>
+      </g>
+
+      <g id="space-mb210" data-space-id="mb210" data-kind="classroom">
+        <rect class="space space-classroom" x="685" y="455" width="105" height="105" rx="16" />
+        <text class="space-label" x="737.5" y="507.5" text-anchor="middle"><tspan x="737.5" dy="0">MB 210</tspan></text>
+      </g>
+
+      <g id="space-mb211" data-space-id="mb211" data-kind="classroom">
+        <rect class="space space-classroom" x="800" y="455" width="110" height="105" rx="16" />
+        <text class="space-label" x="855" y="507.5" text-anchor="middle"><tspan x="855" dy="0">MB 211</tspan></text>
+      </g>
+
+      <g id="space-2f-men-toilet" data-space-id="2f-men-toilet" data-kind="toilet">
+        <rect class="space space-toilet" x="930" y="455" width="80" height="110" rx="16" />
+        <text class="space-label" x="970" y="500" text-anchor="middle"><tspan x="970" dy="0">Men's</tspan><tspan x="970" dy="22">Toilet</tspan></text>
+      </g>
+
+      <g id="space-2f-women-toilet" data-space-id="2f-women-toilet" data-kind="toilet">
+        <rect class="space space-toilet" x="1015" y="455" width="90" height="110" rx="16" />
+        <text class="space-label" x="1060" y="500" text-anchor="middle"><tspan x="1060" dy="0">Women's</tspan><tspan x="1060" dy="22">Toilet</tspan></text>
+      </g>
+
+      <g id="space-2f-west-stairs" data-space-id="2f-west-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="85" y="320" width="70" height="80" rx="16" />
+        <text class="space-label" x="120" y="350" text-anchor="middle"><tspan x="120" dy="0">West</tspan><tspan x="120" dy="22">Stairs</tspan></text>
+      </g>
+
+      <g id="space-2f-center-stairs" data-space-id="2f-center-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="280" y="365" width="70" height="72" rx="16" />
+        <text class="space-label" x="315" y="391" text-anchor="middle"><tspan x="315" dy="0">Center</tspan><tspan x="315" dy="22">Stairs</tspan></text>
+      </g>
+
+      <g id="space-2f-east-stairs" data-space-id="2f-east-stairs" data-kind="stairs">
+        <rect class="space space-stairs" x="1080" y="315" width="70" height="80" rx="16" />
+        <text class="space-label" x="1115" y="345" text-anchor="middle"><tspan x="1115" dy="0">East</tspan><tspan x="1115" dy="22">Stairs</tspan></text>
+      </g>
+</svg>

@@ -1,0 +1,27 @@
+{
+  "id": "math-building",
+  "name": "Math Building",
+  "canvas": {
+    "width": 1200,
+    "height": 760
+  },
+  "floors": [
+    {
+      "id": "ground",
+      "name": "Ground Floor",
+      "level": 0
+    },
+    {
+      "id": "second",
+      "name": "Second Floor",
+      "level": 1
+    },
+    {
+      "id": "third",
+      "name": "Third Floor",
+      "level": 2
+    }
+  ],
+  "sourceNote": "Geometry is a schematic vector reconstruction from user-supplied orientation posters. It must be physically verified before production navigation.",
+  "verificationStatus": "prototype"
+}

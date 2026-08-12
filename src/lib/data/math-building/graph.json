@@ -1,0 +1,1054 @@
+{
+  "nodes": [
+    {
+      "id": "gf-h1",
+      "floor": "ground",
+      "x": 170,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 1"
+    },
+    {
+      "id": "gf-h2",
+      "floor": "ground",
+      "x": 310,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 2"
+    },
+    {
+      "id": "gf-h3",
+      "floor": "ground",
+      "x": 450,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 3"
+    },
+    {
+      "id": "gf-h4",
+      "floor": "ground",
+      "x": 590,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 4"
+    },
+    {
+      "id": "gf-h5",
+      "floor": "ground",
+      "x": 730,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 5"
+    },
+    {
+      "id": "gf-h6",
+      "floor": "ground",
+      "x": 870,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 6"
+    },
+    {
+      "id": "gf-h7",
+      "floor": "ground",
+      "x": 1010,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 7"
+    },
+    {
+      "id": "gf-west-stairs",
+      "floor": "ground",
+      "x": 140,
+      "y": 380,
+      "kind": "stairs",
+      "label": "West Stairs"
+    },
+    {
+      "id": "gf-center-stairs",
+      "floor": "ground",
+      "x": 310,
+      "y": 420,
+      "kind": "stairs",
+      "label": "Center Stairs"
+    },
+    {
+      "id": "gf-east-stairs",
+      "floor": "ground",
+      "x": 1060,
+      "y": 380,
+      "kind": "stairs",
+      "label": "East Stairs"
+    },
+    {
+      "id": "2f-h1",
+      "floor": "second",
+      "x": 170,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 1"
+    },
+    {
+      "id": "2f-h2",
+      "floor": "second",
+      "x": 310,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 2"
+    },
+    {
+      "id": "2f-h3",
+      "floor": "second",
+      "x": 450,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 3"
+    },
+    {
+      "id": "2f-h4",
+      "floor": "second",
+      "x": 590,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 4"
+    },
+    {
+      "id": "2f-h5",
+      "floor": "second",
+      "x": 730,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 5"
+    },
+    {
+      "id": "2f-h6",
+      "floor": "second",
+      "x": 870,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 6"
+    },
+    {
+      "id": "2f-h7",
+      "floor": "second",
+      "x": 1010,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 7"
+    },
+    {
+      "id": "2f-west-stairs",
+      "floor": "second",
+      "x": 140,
+      "y": 380,
+      "kind": "stairs",
+      "label": "West Stairs"
+    },
+    {
+      "id": "2f-center-stairs",
+      "floor": "second",
+      "x": 310,
+      "y": 420,
+      "kind": "stairs",
+      "label": "Center Stairs"
+    },
+    {
+      "id": "2f-east-stairs",
+      "floor": "second",
+      "x": 1060,
+      "y": 380,
+      "kind": "stairs",
+      "label": "East Stairs"
+    },
+    {
+      "id": "3f-h1",
+      "floor": "third",
+      "x": 170,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 1"
+    },
+    {
+      "id": "3f-h2",
+      "floor": "third",
+      "x": 310,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 2"
+    },
+    {
+      "id": "3f-h3",
+      "floor": "third",
+      "x": 450,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 3"
+    },
+    {
+      "id": "3f-h4",
+      "floor": "third",
+      "x": 590,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 4"
+    },
+    {
+      "id": "3f-h5",
+      "floor": "third",
+      "x": 730,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 5"
+    },
+    {
+      "id": "3f-h6",
+      "floor": "third",
+      "x": 870,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 6"
+    },
+    {
+      "id": "3f-h7",
+      "floor": "third",
+      "x": 1010,
+      "y": 380,
+      "kind": "corridor",
+      "label": "Hallway 7"
+    },
+    {
+      "id": "3f-west-stairs",
+      "floor": "third",
+      "x": 140,
+      "y": 380,
+      "kind": "stairs",
+      "label": "West Stairs"
+    },
+    {
+      "id": "3f-center-stairs",
+      "floor": "third",
+      "x": 310,
+      "y": 420,
+      "kind": "stairs",
+      "label": "Center Stairs"
+    },
+    {
+      "id": "3f-east-stairs",
+      "floor": "third",
+      "x": 1060,
+      "y": 380,
+      "kind": "stairs",
+      "label": "East Stairs"
+    },
+    {
+      "id": "gf-main-entrance",
+      "floor": "ground",
+      "x": 55,
+      "y": 380,
+      "kind": "entrance",
+      "label": "Main Entrance"
+    },
+    {
+      "id": "mb100-door",
+      "floor": "ground",
+      "x": 192.5,
+      "y": 330,
+      "kind": "door",
+      "label": "MB 100 door"
+    },
+    {
+      "id": "mb101a-door",
+      "floor": "ground",
+      "x": 362.5,
+      "y": 240,
+      "kind": "door",
+      "label": "MB 101A door"
+    },
+    {
+      "id": "mb101b-door",
+      "floor": "ground",
+      "x": 537.5,
+      "y": 240,
+      "kind": "door",
+      "label": "MB 101B door"
+    },
+    {
+      "id": "mb103a-door",
+      "floor": "ground",
+      "x": 712.5,
+      "y": 240,
+      "kind": "door",
+      "label": "MB 103A door"
+    },
+    {
+      "id": "mb103b-door",
+      "floor": "ground",
+      "x": 887.5,
+      "y": 240,
+      "kind": "door",
+      "label": "MB 103B door"
+    },
+    {
+      "id": "mb102-door",
+      "floor": "ground",
+      "x": 417.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 102 door"
+    },
+    {
+      "id": "mb104-door",
+      "floor": "ground",
+      "x": 730.0,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 104 door"
+    },
+    {
+      "id": "gf-men-toilet-door",
+      "floor": "ground",
+      "x": 947.5,
+      "y": 450,
+      "kind": "door",
+      "label": "Men's Toilet door"
+    },
+    {
+      "id": "gf-women-toilet-door",
+      "floor": "ground",
+      "x": 1052.5,
+      "y": 450,
+      "kind": "door",
+      "label": "Women's Toilet door"
+    },
+    {
+      "id": "mb201-door",
+      "floor": "second",
+      "x": 230.0,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 201 door"
+    },
+    {
+      "id": "mb203-door",
+      "floor": "second",
+      "x": 395.0,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 203 door"
+    },
+    {
+      "id": "mb205-door",
+      "floor": "second",
+      "x": 567.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 205 door"
+    },
+    {
+      "id": "mb207-door",
+      "floor": "second",
+      "x": 742.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 207 door"
+    },
+    {
+      "id": "mb209-door",
+      "floor": "second",
+      "x": 917.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 209 door"
+    },
+    {
+      "id": "mb202-door",
+      "floor": "second",
+      "x": 182.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 202 door"
+    },
+    {
+      "id": "mb204-door",
+      "floor": "second",
+      "x": 387.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 204 door"
+    },
+    {
+      "id": "mb206-door",
+      "floor": "second",
+      "x": 507.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 206 door"
+    },
+    {
+      "id": "mb208-door",
+      "floor": "second",
+      "x": 622.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 208 door"
+    },
+    {
+      "id": "mb210-door",
+      "floor": "second",
+      "x": 737.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 210 door"
+    },
+    {
+      "id": "mb211-door",
+      "floor": "second",
+      "x": 855.0,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 211 door"
+    },
+    {
+      "id": "2f-men-toilet-door",
+      "floor": "second",
+      "x": 970.0,
+      "y": 455,
+      "kind": "door",
+      "label": "Men's Toilet door"
+    },
+    {
+      "id": "2f-women-toilet-door",
+      "floor": "second",
+      "x": 1060.0,
+      "y": 455,
+      "kind": "door",
+      "label": "Women's Toilet door"
+    },
+    {
+      "id": "mb301-door",
+      "floor": "third",
+      "x": 227.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 301 door"
+    },
+    {
+      "id": "mb303-door",
+      "floor": "third",
+      "x": 390.0,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 303 door"
+    },
+    {
+      "id": "mb305-door",
+      "floor": "third",
+      "x": 562.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 305 door"
+    },
+    {
+      "id": "mb307-door",
+      "floor": "third",
+      "x": 737.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 307 door"
+    },
+    {
+      "id": "mb309-door",
+      "floor": "third",
+      "x": 912.5,
+      "y": 245,
+      "kind": "door",
+      "label": "MB 309 door"
+    },
+    {
+      "id": "mb302-door",
+      "floor": "third",
+      "x": 182.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 302 door"
+    },
+    {
+      "id": "mb304-door",
+      "floor": "third",
+      "x": 415.0,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 304 door"
+    },
+    {
+      "id": "mb306-door",
+      "floor": "third",
+      "x": 567.5,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 306 door"
+    },
+    {
+      "id": "mb308-door",
+      "floor": "third",
+      "x": 720.0,
+      "y": 455,
+      "kind": "door",
+      "label": "MB 308 door"
+    },
+    {
+      "id": "3f-men-toilet-door",
+      "floor": "third",
+      "x": 955.0,
+      "y": 455,
+      "kind": "door",
+      "label": "Men's Toilet door"
+    },
+    {
+      "id": "3f-women-toilet-door",
+      "floor": "third",
+      "x": 1055.0,
+      "y": 455,
+      "kind": "door",
+      "label": "Women's Toilet door"
+    }
+  ],
+  "edges": [
+    {
+      "from": "gf-h1",
+      "to": "gf-h2",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-h2",
+      "to": "gf-h3",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-h3",
+      "to": "gf-h4",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-h4",
+      "to": "gf-h5",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-h5",
+      "to": "gf-h6",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-h6",
+      "to": "gf-h7",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-west-stairs",
+      "to": "gf-h1",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-center-stairs",
+      "to": "gf-h2",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-east-stairs",
+      "to": "gf-h7",
+      "cost": 50,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h1",
+      "to": "2f-h2",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h2",
+      "to": "2f-h3",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h3",
+      "to": "2f-h4",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h4",
+      "to": "2f-h5",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h5",
+      "to": "2f-h6",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-h6",
+      "to": "2f-h7",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-west-stairs",
+      "to": "2f-h1",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-center-stairs",
+      "to": "2f-h2",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-east-stairs",
+      "to": "2f-h7",
+      "cost": 50,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h1",
+      "to": "3f-h2",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h2",
+      "to": "3f-h3",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h3",
+      "to": "3f-h4",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h4",
+      "to": "3f-h5",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h5",
+      "to": "3f-h6",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-h6",
+      "to": "3f-h7",
+      "cost": 140.0,
+      "kind": "corridor",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-west-stairs",
+      "to": "3f-h1",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-center-stairs",
+      "to": "3f-h2",
+      "cost": 40,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-east-stairs",
+      "to": "3f-h7",
+      "cost": 50,
+      "kind": "connector",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-main-entrance",
+      "to": "gf-west-stairs",
+      "cost": 85,
+      "kind": "entrance",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-west-stairs",
+      "to": "2f-west-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-west-stairs",
+      "to": "3f-west-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-center-stairs",
+      "to": "2f-center-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-center-stairs",
+      "to": "3f-center-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-east-stairs",
+      "to": "2f-east-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-east-stairs",
+      "to": "3f-east-stairs",
+      "cost": 120,
+      "kind": "stairs",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb100-door",
+      "to": "gf-h1",
+      "cost": 54.83,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb101a-door",
+      "to": "gf-h2",
+      "cost": 149.52,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb101b-door",
+      "to": "gf-h4",
+      "cost": 149.52,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb103a-door",
+      "to": "gf-h5",
+      "cost": 141.09,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb103b-door",
+      "to": "gf-h6",
+      "cost": 141.09,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb102-door",
+      "to": "gf-h2",
+      "cost": 131.08,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb104-door",
+      "to": "gf-h4",
+      "cost": 158.82,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-men-toilet-door",
+      "to": "gf-h6",
+      "cost": 104.43,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "gf-women-toilet-door",
+      "to": "gf-h7",
+      "cost": 81.89,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb201-door",
+      "to": "2f-h1",
+      "cost": 147.73,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb203-door",
+      "to": "2f-h3",
+      "cost": 145.77,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb205-door",
+      "to": "2f-h4",
+      "cost": 136.86,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb207-door",
+      "to": "2f-h5",
+      "cost": 135.58,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb209-door",
+      "to": "2f-h6",
+      "cost": 143.11,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb202-door",
+      "to": "2f-h1",
+      "cost": 76.03,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb204-door",
+      "to": "2f-h3",
+      "cost": 97.63,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb206-door",
+      "to": "2f-h3",
+      "cost": 94.51,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb208-door",
+      "to": "2f-h4",
+      "cost": 81.74,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb210-door",
+      "to": "2f-h5",
+      "cost": 75.37,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb211-door",
+      "to": "2f-h6",
+      "cost": 76.49,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-men-toilet-door",
+      "to": "2f-h6",
+      "cost": 125.0,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "2f-women-toilet-door",
+      "to": "2f-h7",
+      "cost": 90.14,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb301-door",
+      "to": "3f-h1",
+      "cost": 146.74,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb303-door",
+      "to": "3f-h3",
+      "cost": 147.73,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb305-door",
+      "to": "3f-h4",
+      "cost": 137.77,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb307-door",
+      "to": "3f-h5",
+      "cost": 135.21,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb309-door",
+      "to": "3f-h6",
+      "cost": 141.53,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb302-door",
+      "to": "3f-h1",
+      "cost": 76.03,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb304-door",
+      "to": "3f-h3",
+      "cost": 82.76,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb306-door",
+      "to": "3f-h4",
+      "cost": 78.3,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "mb308-door",
+      "to": "3f-h5",
+      "cost": 75.66,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-men-toilet-door",
+      "to": "3f-h6",
+      "cost": 113.36,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    },
+    {
+      "from": "3f-women-toilet-door",
+      "to": "3f-h7",
+      "cost": 87.46,
+      "kind": "door",
+      "bidirectional": true,
+      "enabled": true
+    }
+  ]
+}
