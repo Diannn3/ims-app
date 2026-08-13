@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import { formatClock, weekdayName } from '$lib/domain/academic/formatters';
   import { floorDisplayName } from '$lib/domain/navigation/spaces';
   let { data } = $props();
@@ -44,6 +45,8 @@
           title="Schedule data is not connected"
           message="The physical room information remains available even without the academic database."
         />
+      {:else if !data.repositoryStatus.available}
+        <AcademicErrorState message={data.repositoryStatus.message} />
       {:else if data.schedule.meetings.length === 0}
         <AcademicEmptyState
           title="No published schedule is available"

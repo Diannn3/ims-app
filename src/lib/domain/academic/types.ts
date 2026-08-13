@@ -1,5 +1,4 @@
 export type PublicationMeta = {
-  sourceId: string | null;
   sourceLabel: string | null;
   sourceUrl: string | null;
   lastVerifiedAt: string | null;
@@ -17,6 +16,7 @@ export type MeetingSummary = {
   startsAt: string;
   endsAt: string;
   spaceId: string | null;
+  spaceName: string | null;
 };
 
 export type InstructorSummary = {
@@ -72,6 +72,7 @@ export type ConsultationSummary = {
   endsAt: string | null;
   mode: 'in_person' | 'online' | 'hybrid' | 'by_appointment';
   spaceId: string | null;
+  spaceName: string | null;
   appointmentUrl: string | null;
   notes: string | null;
   meta: PublicationMeta;
@@ -81,6 +82,7 @@ export type FacultyDetail = FacultySummary & {
   bio: string | null;
   publicationsUrl: string | null;
   officeSpaceId: string | null;
+  officeSpaceName: string | null;
   consultations: ConsultationSummary[];
   currentSections: Array<{
     sectionId: string;
@@ -111,12 +113,14 @@ export type ServiceSummary = {
   name: string;
   description: string | null;
   spaceId: string | null;
+  spaceName: string | null;
   officialUrl: string | null;
   meta: PublicationMeta;
 };
 
 export type AcademicRepositoryStatus = {
   configured: boolean;
+  available: boolean;
   message?: string;
 };
 
@@ -159,6 +163,7 @@ export type AcademicEventSummary = {
   startsAt: string;
   endsAt: string | null;
   spaceId: string | null;
+  spaceName: string | null;
   organizer: string | null;
   officialUrl: string | null;
   meta: PublicationMeta;

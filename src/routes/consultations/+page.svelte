@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import ConsultationSchedule from '$lib/components/faculty/ConsultationSchedule.svelte';
   let { data } = $props();
 
@@ -69,6 +70,8 @@
         title="Consultation data is not connected yet"
         message="The app is ready for current-term consultation data, but no academic repository is configured in this deployment."
       />
+    {:else if !data.repositoryStatus.available}
+      <AcademicErrorState message={data.repositoryStatus.message} />
     {:else if data.items.length === 0}
       <AcademicEmptyState
         title="No published consultation hours"

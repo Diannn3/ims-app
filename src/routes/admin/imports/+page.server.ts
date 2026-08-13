@@ -8,7 +8,8 @@ import {
   listImportBatches,
   persistStagedScheduleBatch
 } from '$lib/data-access/imports/repository.server';
-import { MAX_IMPORT_BYTES, parseScheduleCsv } from '$lib/server/imports/csv';
+import { MAX_IMPORT_BYTES, parseScheduleCsv, ScheduleCsvInputError } from '$lib/server/imports/csv';
+import { safeAdminActionError } from '$lib/server/admin-errors';
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.supabase) return { setup: { sources: [], terms: [] }, batches: [] };
@@ -29,7 +30,9 @@ export const actions: Actions = {
     const file = form.get('schedule');
     const sourceId = String(form.get('sourceId') ?? '').trim();
     const termId = String(form.get('termId') ?? '').trim();
-    const authoritativeSnapshot = form.get('authoritativeSnapshot') === 'on';
+    // Snapshot reconciliation is intentionally disabled until the retirement/reconciliation
+    // transaction is implemented and database-tested. Never persist a misleading flag.
+    const authoritativeSnapshot = false;
 
     if (!(file instanceof File) || file.size === 0) {
       return fail(400, { stageError: 'Choose a non-empty CSV file.' });
@@ -76,20 +79,21 @@ export const actions: Actions = {
         supabase,
         sourceId,
         termId,
-        importedBy: profile.user_id,
         filename: file.name,
         previewHash: parsed.previewHash,
         authoritativeSnapshot,
         rows: parsed.rows,
-        existingHashes,
-        counts: parsed.counts
+        existingHashes
       });
 
       throw redirect(303, `/admin/imports/${batchId}`);
     } catch (error) {
       if (error && typeof error === 'object' && 'status' in error && 'location' in error) throw error;
+      if (error instanceof ScheduleCsvInputError) {
+        return fail(400, { stageError: error.publicMessage });
+      }
       return fail(400, {
-        stageError: error instanceof Error ? error.message : 'The CSV could not be staged.'
+        stageError: safeAdminActionError(error instanceof Error ? error : null, 'The CSV could not be staged.', 'imports:stage')
       });
     }
   }

@@ -69,7 +69,7 @@
                     <strong>{dayName(meeting.weekday)}</strong>
                     <span>{time(meeting.startsAt)}–{time(meeting.endsAt)}</span>
                     {#if meeting.roomId}
-                      <a href={`/room/${meeting.roomId}`}>{meeting.roomId.toUpperCase()}</a>
+                      <a href={`/room/${meeting.roomId}`}>{meeting.roomName ?? meeting.roomId.toUpperCase()}</a>
                     {:else}
                       <span class="room-tba">TBA</span>
                     {/if}

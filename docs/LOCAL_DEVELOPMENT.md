@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Node.js 20+ (22 recommended)
+- Node.js 22+ (repository/CI contract)
 - npm
 - Supabase CLI
 - Docker-compatible runtime required by local Supabase
@@ -15,6 +15,7 @@ cp .env.example .env
 supabase start
 supabase db reset
 npm run types:db
+npm run types:check
 npm run verify
 npm run dev
 ```
@@ -32,7 +33,7 @@ npm run test:db
 npm run types:db
 ```
 
-`src/lib/database.types.ts` is generated output and must be regenerated after migrations 004–008. Do not hand-edit it to match the schema.
+`src/lib/database.types.ts` is generated output and must be regenerated after the current migration set (currently 001–020). Do not hand-edit or reconstruct it from migration guesses; generate it only after a successful local replay, inspect the diff, and commit the reviewed artifact.
 
 ## Synthetic fixture account
 

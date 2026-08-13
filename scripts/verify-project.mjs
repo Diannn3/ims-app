@@ -27,6 +27,7 @@ async function walk(dir) {
 }
 
 const required = [
+  '.env.example',
   'src/hooks.server.ts',
   'src/lib/server/supabase.ts',
   'src/lib/domain/navigation/a-star.ts',
@@ -43,7 +44,11 @@ const required = [
   'static/manifest.webmanifest',
   'docs/QR_ANCHORS.md',
   '.github/workflows/ci.yml',
-  '.github/workflows/database-tests.yml'
+  '.github/workflows/database-tests.yml',
+  'tsconfig.domain.json',
+  'src/lib/server/admin-errors.ts',
+  'scripts/check-database-types.mjs',
+  'supabase/migrations/009_integrity_privacy_hardening.sql'
 ];
 for (const path of required) assert(existsSync(join(root, path)), `Missing required file: ${path}`);
 
@@ -86,6 +91,18 @@ assert(layout.includes('class="skip-link"'), 'Application shell must include a s
 assert(layout.includes('id="main-content"'), 'Application shell must expose #main-content');
 assert(layout.includes('aria-current'), 'Application navigation must expose aria-current');
 
+const hooks = await text('src/hooks.server.ts');
+assert(hooks.includes("X-Frame-Options', 'DENY"), 'Server security headers must block framing');
+assert(hooks.includes("frame-ancestors 'none'"), 'Server CSP must block framing with frame-ancestors');
+assert(hooks.includes("Permissions-Policy"), 'Server should emit an explicit Permissions-Policy');
+assert(hooks.includes("isDynamicPublicRoute"), 'Dynamic academic SSR should have an explicit cache policy boundary');
+assert(hooks.includes("Cache-Control', 'no-store'"), 'Dynamic academic SSR should be no-store until public snapshots exist');
+
+const supabaseServer = await text('src/lib/server/supabase.ts');
+assert(supabaseServer.includes('sb_secret_'), 'Supabase public config must reject new-format secret keys');
+assert(supabaseServer.includes("role === 'service_role'"), 'Supabase public config must reject legacy service-role JWTs');
+assert(supabaseServer.includes("url.protocol === 'https:'"), 'Hosted Supabase URLs must require HTTPS');
+
 const worker = await text('src/service-worker.ts');
 for (const prefix of ['/admin', '/staff']) {
   assert(worker.includes(prefix), `Service worker must explicitly exclude ${prefix} routes from caching`);
@@ -104,9 +121,98 @@ const migration008 = await text('supabase/migrations/008_schedule_review_queue.s
 assert(migration008.includes('set_schedule_section_review'), 'Schedule review RPC is missing');
 assert(migration008.includes('set_schedule_section_publication'), 'Schedule publication RPC is missing');
 
+const migration009 = await text('supabase/migrations/009_integrity_privacy_hardening.sql');
+assert(migration009.includes('public_faculty'), 'Public-safe faculty projection is missing');
+assert(migration009.includes('public_faculty_notices'), 'Public-safe faculty notice projection is missing');
+assert(migration009.includes('public_route_restrictions'), 'Public-safe route restriction projection is missing');
+assert(migration009.includes('before update on public.consultation_hours'), 'Consultation content edits must pass through the full update guard');
+assert(migration009.includes('nulls not distinct'), 'Source-record identity must treat NULL term IDs as equal');
+
+const academicRepository = await text('src/lib/data-access/academic/repository.server.ts');
+const forbiddenPublicBaseTables = [
+  'spaces', 'academic_terms', 'courses', 'sections', 'section_meetings',
+  'faculty_section_assignments', 'course_prerequisites', 'faculty_offices',
+  'consultation_hours', 'faculty_research_areas', 'research_areas',
+  'academic_services', 'academic_resources', 'academic_dates', 'academic_events', 'faculty'
+];
+for (const table of forbiddenPublicBaseTables) {
+  assert(!academicRepository.includes(`.from('${table}')`), `Public academic repository must not query canonical ${table} directly`);
+}
+assert(academicRepository.includes(".from('public_faculty')"), 'Public academic repository is not wired to public_faculty');
+assert(academicRepository.includes(".from('public_courses')"), 'Public academic repository is not wired to public_courses');
+assert(academicRepository.includes(".from('public_sections')"), 'Public academic repository is not wired to public_sections');
+assert(academicRepository.includes(".from('public_consultation_hours')"), 'Public academic repository is not wired to public_consultation_hours');
+
 const csv = await text('src/lib/server/imports/csv.ts');
 assert(csv.includes('sourceRecordKey'), 'CSV importer should support stable external source record keys');
 assert(csv.includes('csv-parse/sync'), 'CSV importer should use a real CSV parser');
+assert(csv.includes("issue.code === 'duplicate_source_row'"), 'Duplicate identical source rows must be skipped');
+assert(!csv.includes('input.weekdays.join'), 'Fallback source identity must not change when meeting days change');
+
+
+const packageJson = JSON.parse(await text('package.json'));
+assert(packageJson.devDependencies?.supabase === '2.110.0', 'Project-local Supabase CLI must be pinned exactly');
+assert(packageJson.engines?.node === '>=22.0.0', 'Project Node engine must exclude EOL Node 20');
+assert(packageJson.scripts?.gate === 'node scripts/run-validation-gate.mjs', 'Cross-platform validation gate runner must be wired');
+assert(packageJson.scripts?.['verify:sql-security'] === 'node scripts/verify-sql-security.mjs', 'Static SECURITY DEFINER verifier must be wired');
+const sourceVisibility = await text('supabase/migrations/010_source_visibility_hardening.sql');
+assert(sourceVisibility.includes('public_metadata boolean not null default false'), 'Source metadata must be public only by explicit opt-in');
+assert(sourceVisibility.includes('where public_metadata = true'), 'Public provenance view must filter internal sources');
+const scheduleIntegrity = await text('supabase/migrations/011_schedule_child_integrity.sql');
+assert(scheduleIntegrity.includes('section_meeting_material_update_invalidate'), 'Material meeting mutations must invalidate reviewed schedules');
+assert(scheduleIntegrity.includes('faculty_assignment_update_invalidate'), 'Instructor assignment mutations must invalidate reviewed schedules');
+const atomicStaging = await text('supabase/migrations/012_atomic_import_staging.sql');
+assert(atomicStaging.includes('stage_schedule_import_batch'), 'Schedule staging must use the atomic database RPC');
+assert(atomicStaging.includes('revoke insert on table public.import_batches from authenticated'), 'Direct authenticated batch inserts must be revoked');
+assert(atomicStaging.includes('revoke insert on table public.import_rows from authenticated'), 'Direct authenticated staging-row inserts must be revoked');
+const stagingImmutability = await text('supabase/migrations/013_import_staging_immutability.sql');
+assert(stagingImmutability.includes('revoke update, delete on table public.import_rows from authenticated'), 'Staged row content must be immutable through the Data API');
+assert(stagingImmutability.includes('grant update (acknowledged_at, acknowledged_by)'), 'Issue updates must be acknowledgement-only');
+const assignmentOwnership = await text('supabase/migrations/014_assignment_source_ownership.sql');
+assert(assignmentOwnership.includes('faculty_section_assignment_sources'), 'Faculty assignments must retain many-to-many source ownership');
+assert(assignmentOwnership.includes('import_managed'), 'Import-managed faculty assignments must be distinguishable from manual assignments');
+assert(assignmentOwnership.includes('final import owner disappears'), 'Faculty assignment cleanup must preserve corroborating source owners');
+const importPayloadIntegrity = await text('supabase/migrations/015_import_payload_integrity.sql');
+assert(importPayloadIntegrity.includes('schedule_import_row_integrity_guard'), 'Database-side staging payload integrity guard is missing');
+assert(importPayloadIntegrity.includes('import_rows_batch_actionable_source_key_uidx'), 'Actionable source identities must be unique inside a staged batch');
+assert(importPayloadIntegrity.includes('staging_integrity_version'), 'Apply must distinguish batches staged before/after the database integrity boundary');
+const officeIntegrity = await text('supabase/migrations/016_faculty_office_integrity.sql');
+assert(officeIntegrity.includes('faculty_offices_identity_uidx'), 'Permanent/term-scoped faculty office identity must treat NULL terms as equal');
+assert(officeIntegrity.includes('faculty_offices_one_primary_uidx'), 'Faculty office data must enforce at most one primary office per faculty/term');
+const publicReadSurfaces = await text('supabase/migrations/017_public_read_surfaces.sql');
+for (const viewName of [
+  'public_spaces',
+  'public_courses',
+  'public_sections',
+  'public_section_meetings',
+  'public_faculty_offices',
+  'public_faculty_section_assignments',
+  'public_consultation_hours',
+  'public_research_areas',
+  'public_academic_services',
+  'public_academic_resources',
+  'public_academic_events',
+  'public_academic_dates'
+]) {
+  assert(publicReadSurfaces.includes(`view public.${viewName}`), `Missing public-safe read surface: ${viewName}`);
+}
+assert(publicReadSurfaces.includes('revoke select on table public.courses from anon'), 'Anonymous clients must not query canonical courses directly');
+assert(publicReadSurfaces.includes('alter default privileges for role postgres in schema public'), 'Future Data API objects must use explicit least-privilege grants');
+const scheduleOccurrenceIntegrity = await text('supabase/migrations/018_schedule_occurrence_integrity.sql');
+assert(scheduleOccurrenceIntegrity.includes('section_meetings_identity_uidx'), 'Exact duplicate section meeting occurrences must be impossible');
+assert(scheduleOccurrenceIntegrity.includes('schedule_import_weekday_canonical_guard'), 'Schedule V1 weekdays must be canonicalized at the database boundary');
+const spatialParentIntegrity = await text('supabase/migrations/019_spatial_parent_integrity.sql');
+assert(spatialParentIntegrity.includes('spaces_floor_building_fkey'), 'Space floor/building parent consistency must be database-enforced');
+assert(spatialParentIntegrity.includes('location_anchor_space_consistency_guard'), 'Location anchors must reject cross-floor/cross-building attached spaces');
+const consultationTimeIntegrity = await text('supabase/migrations/020_consultation_time_integrity.sql');
+assert(consultationTimeIntegrity.includes('consultation_time_requires_weekday'), 'Fixed consultation clock windows must require a weekday');
+const seedSql = await text('supabase/seed.sql');
+assert(seedSql.includes('public_metadata'), 'Synthetic seed source must declare whether its provenance is public');
+assert(/Never treat these academic records as real UPLB data\.',\s*true/.test(seedSql), 'Synthetic demo source must be explicitly public for provenance tests');
+assert(hooks.includes("Cache-Control', 'private, no-store"), 'Admin/auth responses must be marked no-store');
+assert(hooks.includes("X-Content-Type-Options', 'nosniff"), 'Baseline nosniff header must be present');
+const dbWorkflow = await text('.github/workflows/database-tests.yml');
+assert(dbWorkflow.includes('version: 2.110.0'), 'Database CI must use the same pinned Supabase CLI version');
 
 const seed = await text('supabase/seed.sql');
 assert(seed.includes('Synthetic'), 'Development seed must visibly identify itself as synthetic');
@@ -115,6 +221,12 @@ assert(!/MATH\s*38/i.test(seed), 'Development seed should not fabricate a real M
 const logoStat = await stat(join(root, 'static/brand/ims-mark.png'));
 assert(logoStat.size > 1000, 'IMS mark asset appears empty or invalid');
 notes.push(`IMS mark present (${logoStat.size} bytes)`);
+
+const adminServerFiles = (await walk('src/routes/admin')).filter((file) => file.endsWith('+page.server.ts'));
+for (const file of adminServerFiles) {
+  const source = await text(file);
+  assert(!/fail\([^\n]*\b(?:error|updateError|applyError|rejectError)\.message/.test(source), `${file} returns a raw database error message to the browser`);
+}
 
 if (failures.length) {
   console.error(`Project verification failed with ${failures.length} issue(s):`);

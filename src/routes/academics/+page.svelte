@@ -1,6 +1,7 @@
 <script lang="ts">
   import CourseCard from '$lib/components/academic/CourseCard.svelte';
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   let { data } = $props();
 </script>
 
@@ -104,6 +105,8 @@
         actionHref="/map"
         actionLabel="Use the building map"
       />
+    {:else if !data.repositoryStatus.available}
+      <AcademicErrorState message={data.repositoryStatus.message} />
     {:else if data.courses.length === 0}
       <AcademicEmptyState
         title={data.query ? 'No published course matched that search' : 'No published courses yet'}

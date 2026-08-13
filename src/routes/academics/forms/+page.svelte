@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import SourceBadge from '$lib/components/academic/SourceBadge.svelte';
   let { data } = $props();
 
@@ -26,6 +27,8 @@
 
   {#if !data.repositoryStatus.configured}
     <AcademicEmptyState title="Resources are not connected yet" message="No public academic repository is configured in this deployment." />
+  {:else if !data.repositoryStatus.available}
+    <AcademicErrorState message={data.repositoryStatus.message} />
   {:else if data.resources.length === 0}
     <AcademicEmptyState title="No published resources yet" message="Only verified official links are shown here." />
   {:else}

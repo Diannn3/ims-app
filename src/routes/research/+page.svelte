@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import SourceBadge from '$lib/components/academic/SourceBadge.svelte';
   let { data } = $props();
 </script>
@@ -23,6 +24,8 @@
       actionHref="/academics"
       actionLabel="Back to academics"
     />
+  {:else if !data.repositoryStatus.available}
+    <AcademicErrorState message={data.repositoryStatus.message} />
   {:else if data.areas.length === 0}
     <AcademicEmptyState
       title="No published research areas yet"

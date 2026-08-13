@@ -180,8 +180,28 @@ export function resolveScheduleRow(
   }
 
   if (canonical.facultyEmail) {
-    const faculty = context.facultyByEmail.get(canonical.facultyEmail);
-    if (faculty) facultyId = faculty.id;
+    const matches = context.facultyByEmail.get(canonical.facultyEmail) ?? [];
+    if (matches.length === 1) {
+      facultyId = matches[0].id;
+    } else if (matches.length > 1) {
+      issues.push({
+        rowNumber: canonical.rowNumber,
+        field: 'facultyEmail',
+        severity: 'warning',
+        code: 'ambiguous_faculty_email',
+        message: `Faculty email “${canonical.facultyEmail}” matches multiple records and requires review.`,
+        originalValue: canonical.facultyEmail
+      });
+    } else {
+      issues.push({
+        rowNumber: canonical.rowNumber,
+        field: 'facultyEmail',
+        severity: 'warning',
+        code: 'unknown_faculty_email',
+        message: `Faculty email “${canonical.facultyEmail}” does not match a known faculty record and requires review.`,
+        originalValue: canonical.facultyEmail
+      });
+    }
   }
 
   if (!facultyId && canonical.facultyName) {

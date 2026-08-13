@@ -26,6 +26,9 @@ jobs:
       - name: Static project/data invariants
         run: npm run verify
 
+      - name: Framework-free domain typecheck
+        run: npm run check:domain
+
       - name: Svelte and TypeScript checks
         run: npm run check
 
@@ -40,3 +43,25 @@ jobs:
 
       - name: Browser smoke journeys
         run: npm run test:e2e
+
+      - name: Record successful app-gate evidence
+        run: npm run evidence:app
+
+      - name: Upload app-gate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-gate-evidence
+          path: validation-evidence/app-gate.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-evidence
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import SourceBadge from '$lib/components/academic/SourceBadge.svelte';
   import ConsultationSchedule from '$lib/components/faculty/ConsultationSchedule.svelte';
   let { data } = $props();
@@ -20,6 +21,8 @@
       actionHref="/people"
       actionLabel="Back to faculty directory"
     />
+  {:else if !data.repositoryStatus.available}
+    <AcademicErrorState message={data.repositoryStatus.message} />
   {:else if data.faculty}
     <section class="faculty-hero">
       <a class="back-link" href="/people">← Faculty directory</a>
@@ -63,7 +66,7 @@
           {#if data.faculty.officeSpaceId}
             <div class="office-card">
               <div>
-                <strong>{data.faculty.officeSpaceId.toUpperCase()}</strong>
+                <strong>{data.faculty.officeSpaceName ?? data.faculty.officeSpaceId.toUpperCase()}</strong>
                 <span>Published office location</span>
               </div>
               <div class="cluster">

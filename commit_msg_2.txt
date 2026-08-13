@@ -1,0 +1,119 @@
+Continued the next validation gate and pushed the local worktree substantially further. The work is now on a clean local branch:
+chatgpt/next-validation-gate
+commit: 29238a3 — harden validation gate and public data boundary
+I also retried GitHub branch creation; the connected GitHub integration still returns 403 Resource not accessible by integration, so I could not safely push this branch to your remote.
+What I completed in this pass
+The database architecture is now extended through migrations 001–020, with the newest migrations focused on actual integrity problems rather than adding features:
+many-to-many import provenance for faculty assignments
+database-side validation of staged import payloads
+NULL-safe faculty office identity
+one primary faculty office per term
+curated public_* read surfaces
+canonical-table reads removed from anonymous access
+duplicate section meeting prevention
+canonical weekday enforcement
+floor/building/space parent consistency
+consultation-time consistency
+This direction is consistent with Supabase's current guidance: grants and RLS should both restrict Data API exposure, while SECURITY DEFINER functions need particularly careful privilege handling and an explicit search_path. ([Supabase](https://supabase.com/docs/guides/api/securing-your-api))
+Public Data API boundary
+I tightened the public architecture further.
+Student-facing academic reads now go through things such as:
+public_courses public_sections public_section_meetings public_faculty public_faculty_offices public_consultation_hours public_spaces public_academic_services ...
+instead of the canonical moderation/import tables.
+This matters because normal Postgres views are owner-executed by default and can bypass underlying RLS. Our architecture therefore deliberately uses explicit, fail-closed view predicates + explicit columns + revoked base-table access, rather than assuming RLS magically applies through the view. Supabase explicitly documents the default view behavior. ([Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security))
+I added database tests that verify the curated views retain security_barrier=true and remain owner-executed as intended.
+Universal Search got hardened
+I found one piece I didn't like in the previous implementation:
+.or(`display_name.ilike.%${text}%,title.ilike.%${text}%`)
+Even though we were sanitizing some characters, raw interpolation into PostgREST filter syntax is unnecessary.
+That's gone.
+Search now uses normal .ilike(column, value) query methods and merges the results.
+Input also gets:
+Unicode NFKC normalization whitespace normalization control-character removal LIKE wildcard removal: %, _, \ 80-character maximum
+So something weird cannot turn into a giant wildcard directory scan or break raw filter grammar.
+I also added tests for the normalization contract and put maxlength="80" on the UI search field.
+New database/application contract verifier
+I added:
+scripts/verify-data-access-contracts.mjs
+This is useful while we don't have Postgres available in this cloud environment.
+It scans the source code for every literal:
+.from('...') .rpc('...')
+and compares them with the tables/views/functions actually created by migrations.
+Current result:
+56 public table/view names discovered 5 public RPC names discovered 62 .from() calls checked 7 .rpc() calls checked PASS
+It also fails if a student-facing academic/search repository:
+queries a canonical institutional table
+calls a non-existent DB relation
+calls a non-existent RPC
+interpolates data into a raw PostgREST .or() filter
+This obviously does not replace running Postgres, but it closes another class of schema/application drift before CI.
+Supabase environment safety got stronger
+I hardened:
+src/lib/server/supabase.ts
+Hosted Supabase connections must now be:
+https://...
+while local development may still use:
+http://127.0.0.1 http://localhost
+More importantly, the application rejects:
+sb_secret_...
+if somebody accidentally places a modern Supabase secret key into a PUBLIC_* environment variable.
+It also decodes legacy JWT-style keys and rejects:
+role: service_role role: supabase_admin
+A browser-adjacent configuration should only receive a publishable/legacy anon key.
+Supabase is moving toward the newer publishable/secret key model and explicitly describes publishable keys as the client-side option. ([Supabase](https://supabase.com/docs/guides/api/creating-routes))
+Our SvelteKit SSR architecture remains correct too: cookie-session SSR applications such as SvelteKit are a documented use case for @supabase/ssr, and getClaims() verifies the JWT before returning claims. ([Supabase](https://supabase.com/docs/guides/auth/choosing-a-server-package))
+HTTP security boundary
+I also hardened the SvelteKit response layer.
+Responses now include:
+X-Content-Type-Options: nosniff Referrer-Policy: strict-origin-when-cross-origin X-Frame-Options: DENY Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; object-src 'none';
+frame-ancestors 'none' is the modern CSP protection against another site embedding the application for clickjacking. ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors))
+Unused powerful browser features are disabled for now:
+camera microphone geolocation payment usb serial hid
+We'll explicitly loosen those later only if a real feature needs them—for example, if we eventually decide to make an in-app QR scanner rather than letting students use their normal Camera app. Permissions Policy exists specifically to control access to these browser capabilities. ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Permissions_Policy))
+Academic caching is now stricter
+These public routes are currently treated as network-owned:
+/academics /course /faculty /consultations /people /research /room /search /services /events
+and receive:
+Cache-Control: no-store
+during this phase.
+I prefer that over accidentally displaying a week-old consultation schedule because some browser/CDN/service worker cached an SSR response.
+Later we're still going with the much cleaner architecture:
+/api/public/offline-snapshot ↓ versioned sanitized published-only freshness metadata ↓ IndexedDB / Cache API
+rather than caching arbitrary academic HTML/API requests.
+Database tests expanded again
+The static pgTAP accounting is now:
+8 database test files / 128 declared assertions.
+They're testing areas such as:
+RBAC publication boundaries public read surfaces import atomicity import payload integrity assignment provenance relational integrity spatial integrity consultation integrity
+Supabase's actual database testing command runs pgTAP through supabase test db, so these tests still need the real stack before they count as passing. ([Supabase](https://supabase.com/docs/guides/local-development/cli/testing-and-linting))
+Static validation status
+I reran everything we can genuinely execute in this container.
+PASS
+npm run verify
+Current result:
+20 ordered database migrations 43 spaces 64 graph nodes 67 graph edges All routing references resolve. 8 pgTAP files 128 declared assertions 19 SECURITY DEFINER functions pass static security checks 97 TS/Svelte source files pass parser-level syntax checks 133 local module import edges resolve 56 DB table/view contracts discovered 5 RPC contracts discovered 62 .from() calls checked 7 .rpc() calls checked No raw {@html} No javascript: URLs No positive tabindex hacks No tracked Supabase secrets Grade domain remains isolated from Supabase PASS
+And:
+tsc -p tsconfig.domain.json
+passes.
+And:
+git diff --check
+passes.
+What is still not green
+I retried npm from inside this environment.
+The real reason it fails is now confirmed:
+registry.npmjs.org → DNS resolution failure
+There is also no Docker-compatible runtime.
+Those are hard blockers because Supabase's current local-development workflow specifically requires the CLI plus Docker or another Docker-compatible runtime, and db reset is what replays all migrations + seed from scratch. ([Supabase](https://supabase.com/docs/guides/local-development/cli-workflows))
+Therefore I am still not claiming these passed:
+npm install npm run check npm run test:unit npm run build supabase start supabase db reset supabase db lint supabase test db npm run types:db npm run types:check Playwright E2E
+And I deliberately did not fabricate:
+package-lock.json
+or:
+src/lib/database.types.ts
+Supabase's recommended type-generation workflow is to introspect the actual replayed database using supabase gen types ... --local. ([Supabase](https://supabase.com/docs/guides/local-development/cli-workflows))
+That's exactly how ours should be produced.
+The remaining true gate
+On a normal GitHub Actions/dev machine, the next run is now:
+npm install npm run doctor:strict npm run verify npm run check:domain npm run db:start npm run db:reset npm run db:lint npm run test:db npm run types:check # expected to fail the first time because types aren't generated npm run types:db # inspect database.types.ts npm run types:check npm run check npm run test:unit npm run build npx playwright install --with-deps chromium npm run test:e2e
+Supabase recommends regenerating TypeScript definitions whenever the schema changes and supports checking generated types in CI. ([Supabase](https://supabase.com/docs/guides/local-development/cli-workflows))
+For Playwright, our production build → webServer → browser-test setup also matches its supported model for automatically launching the application being tested. ([Playwright](https://playwright.dev/docs/test-webserver))

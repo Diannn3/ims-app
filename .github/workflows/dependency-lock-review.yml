@@ -1,0 +1,35 @@
+name: Dependency lockfile review
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The repository intentionally does not accept a guessed/fabricated lockfile.
+      # This workflow resolves the exact-pinned top-level manifest against the real
+      # npm registry without running package lifecycle scripts, then exposes only the
+      # generated lockfile as a review artifact. A human must inspect/commit it.
+      - name: Resolve review lockfile without lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Verify lockfile root matches exact package pins
+        run: node scripts/verify-lockfile.mjs
+
+      - name: Upload lockfile for human review
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-lock-review
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 7

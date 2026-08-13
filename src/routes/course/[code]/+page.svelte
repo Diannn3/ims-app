@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import SourceBadge from '$lib/components/academic/SourceBadge.svelte';
   import { formatClock, weekdayName } from '$lib/domain/academic/formatters';
   let { data } = $props();
@@ -20,6 +21,8 @@
       actionHref="/academics"
       actionLabel="Back to academics"
     />
+  {:else if !data.repositoryStatus.available}
+    <AcademicErrorState message={data.repositoryStatus.message} />
   {:else if data.course}
     <section class="course-hero">
       <a class="back-link" href="/academics">← Academics</a>
@@ -113,7 +116,7 @@
                         <span>{weekdayName(meeting.weekday)}</span>
                         <span>{formatClock(meeting.startsAt)}–{formatClock(meeting.endsAt)}</span>
                         {#if meeting.spaceId}
-                          <a href={`/room/${meeting.spaceId}`}>{meeting.spaceId.toUpperCase()}</a>
+                          <a href={`/room/${meeting.spaceId}`}>{meeting.spaceName ?? meeting.spaceId.toUpperCase()}</a>
                         {:else}
                           <span class="muted">Room TBA</span>
                         {/if}

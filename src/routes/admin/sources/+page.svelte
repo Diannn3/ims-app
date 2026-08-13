@@ -19,6 +19,7 @@
     <label class="field"><span>Authority</span><input class="input" name="authority" placeholder="Institute of Mathematical Sciences" /></label>
     <label class="field"><span>HTTPS source URL</span><input class="input" name="sourceUrl" type="url" inputmode="url" placeholder="https://…" /></label>
     <label class="field"><span>Internal notes</span><textarea class="textarea" name="notes" placeholder="Private reviewer notes. Never exposed by the public source view."></textarea></label>
+    <label class="source-visibility"><input type="checkbox" name="publicMetadata" /><span><strong>Show this source as public provenance</strong><small>Enable only when the label, authority, and URL are safe to show to every student. Internal sheets can stay private.</small></span></label>
     <button class="button primary" type="submit">Register source</button>
   </form>
 
@@ -28,8 +29,8 @@
       <div class="rows">
         {#each data.sources as source}
           <article>
-            <div><strong>{source.label}</strong><span>{source.authority ?? source.source_type.replaceAll('_', ' ')}</span></div>
-            {#if source.source_url}<a href={source.source_url} target="_blank" rel="noreferrer">Source ↗</a>{/if}
+            <div><strong>{source.label}</strong><span>{source.authority ?? source.source_type.replaceAll('_', ' ')} · {source.public_metadata ? 'public provenance' : 'internal source'}</span></div>
+            {#if source.source_url}<a href={source.source_url} target="_blank" rel="noopener noreferrer">Source ↗</a>{/if}
           </article>
         {/each}
       </div>
@@ -40,6 +41,7 @@
 <style>
   .page-heading{margin-bottom:1rem}.page-heading h2{margin:.2rem 0;font-size:clamp(1.8rem,5vw,2.7rem);letter-spacing:-.04em}.page-heading p:not(.eyebrow){margin:0;color:var(--text-muted)}
   .source-grid{display:grid;gap:1rem;align-items:start}.source-form,.source-list{padding:1rem;display:grid;gap:.85rem}.source-form h3,.source-list h3{margin:.15rem 0}.inline-alert{padding:.7rem;border-radius:var(--radius-md);background:var(--surface-subtle)}.inline-alert.error{background:var(--danger-soft);color:var(--danger)}.inline-alert.success{background:var(--ims-green-soft);color:var(--ims-green-deep)}
+  .source-visibility{display:flex;gap:.7rem;align-items:flex-start;padding:.75rem;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--surface-subtle)}.source-visibility input{inline-size:1.1rem;block-size:1.1rem;margin-top:.1rem;accent-color:var(--ims-blue)}.source-visibility span{display:grid;gap:.15rem}.source-visibility small{color:var(--text-muted);line-height:1.45}
   .section-heading{display:flex;justify-content:space-between;gap:1rem;align-items:end}.section-heading>span{color:var(--text-muted)}.rows{display:grid}.rows article{min-height:64px;padding:.7rem 0;display:flex;justify-content:space-between;gap:1rem;align-items:center;border-top:1px solid var(--line-soft)}.rows article>div{display:grid;gap:.15rem}.rows span{color:var(--text-muted);font-size:.82rem;text-transform:capitalize}.rows a{color:var(--ims-blue-ink);font-weight:750}.empty{color:var(--text-muted)}
   @media(min-width:900px){.source-grid{grid-template-columns:minmax(320px,.75fr) minmax(0,1.25fr)}}
 </style>

@@ -32,7 +32,7 @@ export type ResolvedScheduleRowV1 = CanonicalScheduleRowV1 & {
 
 export type ImportValidationContext = {
   coursesByCode: Map<string, { id: string; code: string }>;
-  facultyByEmail: Map<string, { id: string; displayName: string }>;
+  facultyByEmail: Map<string, Array<{ id: string; displayName: string }>>;
   facultyByName: Map<string, Array<{ id: string; displayName: string }>>;
   roomIds: Set<string>;
 };

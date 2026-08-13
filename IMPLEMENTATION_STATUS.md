@@ -44,13 +44,15 @@ Last implementation pass: 2026-08-13
 - No Supabase coupling
 
 ### Academic data governance
-- Migrations 001–008
+- Migrations 001–020
 - Separate `review_status` from public visibility lifecycle
 - RLS hardening and published-only student reads
 - One-current-term unique database invariant
 - Safe public provenance view
+- Public-safe faculty/notice/route-restriction projections that omit internal Auth/moderation identifiers
 - Private role helper and protected staff visibility
 - Faculty consultation publication transitions protected from self-publishing
+- Material consultation edits automatically withdraw stale verification/publication and clear freshness
 - Synthetic local seed matrix
 - CSV staging tables and issue metadata
 - Normalized `source_records` provenance
@@ -71,6 +73,9 @@ Last implementation pass: 2026-08-13
 - Unknown/ambiguous faculty are warnings and remain unresolved
 - Duplicate source keys with conflicting content fail
 - Existing source hashes classify unchanged/changed records
+- Stable V1 fallback identity survives schedule-time/day corrections; multi-row sections require explicit source_record_key
+- Identical duplicate source rows are audit-visible but staged as skipped
+- Unknown faculty emails are explicitly flagged even without a faculty name
 - Admin preview, warning acknowledgement, admin-only apply/reject
 - Applied/rejected batches retained as audit records
 
@@ -88,13 +93,34 @@ Last implementation pass: 2026-08-13
 - `scripts/verify-project.mjs`
 - GitHub Actions scaffolds for app quality and Supabase/pgTAP database security tests
 
+### Next-gate hardening (current branch)
+- Database integrity migrations now extend through `020_consultation_time_integrity.sql`.
+- Seed/map parity verifies all 43 permanent space IDs against the static navigation dataset.
+- pgTAP plan accounting covers 8 database test files / 128 assertions before a real replay.
+- Public Data API is now explicitly modeled as curated `public_*` read views; canonical institutional tables are not anonymous read surfaces.
+- Application/database contract verifier cross-checks every literal `.from()` / `.rpc()` target against objects created by migrations.
+- Public academic/search repositories are statically prevented from querying canonical base tables.
+- Universal search no longer interpolates free text into raw PostgREST `.or()` syntax; search input is normalized, wildcard/control characters are removed, and public queries are capped at 80 characters.
+- Hosted Supabase configuration is HTTPS-only and runtime guards reject new-format secret keys plus legacy service-role/admin JWTs in public environment variables.
+- Response headers deny framing/object embedding and disable unused powerful browser features; dynamic academic SSR stays `no-store` until the dedicated public snapshot format exists.
+
+### Current validation-gate hardening
+- Detailed continuation evidence: `docs/NEXT_GATE_REPORT.md`.
+- Project-local Supabase CLI pinned to `2.110.0`; database CI uses the same pin
+- `npm run doctor` reports local prerequisite blockers before the expensive gate
+- `npm run check:domain` performs a dependency-light framework-free domain typecheck
+- `npm run types:check` is prepared to detect generated Supabase type drift once the local stack is available
+- Database pgTAP suite expanded to cover safe public projections, base-faculty privacy, consultation edit invalidation, and NULL-aware source identity
+- Playwright uses one worker in CI for deterministic smoke journeys
+- See `docs/VALIDATION_GATE.md` for the blocking command sequence and evidence requirements
+
 ## Validated in this cloud environment
 
 The dependency-free checks pass:
 
 ```text
 Project verification passed.
-8 ordered database migrations.
+9 ordered database migrations.
 43 spaces, 64 graph nodes, 67 graph edges.
 All space routing references resolve.
 ```
@@ -118,16 +144,16 @@ The database migrations and Svelte code should be treated as **implemented but a
 - Physical Math Building route/door/facility verification
 - Real current-semester section/faculty/consultation dataset
 - Production Supabase project configuration
-- Generated DB types after migrations 004–008
+- Generated DB types after migrations 001–020
 - Permanent QR placement/printing (prototype anchor routes are implemented)
 - Dedicated offline academic public snapshot format
 - Faculty self-service profile/consultation editor UI
-- Current-term authoritative-snapshot deletion/reconciliation policy
+- Current-term authoritative-snapshot deletion/reconciliation policy (UI flag is disabled until implemented)
 - Full closed beta and accessibility/device QA
 
 ## Next best engineering step
 
-Run the full local toolchain against migrations 001–008, fix any SQL/Svelte/type issues revealed by real execution, regenerate DB types, then test the complete synthetic path:
+Run the full local toolchain against migrations 001–020, fix any SQL/Svelte/type issues revealed by real execution, regenerate DB types, then test the complete synthetic path:
 
 `DEMO 101 → Section A → Prof. Demo Alpha → MB 304 → map`
 

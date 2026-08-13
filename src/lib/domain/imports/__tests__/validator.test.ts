@@ -34,6 +34,78 @@ describe('schedule import validator', () => {
     expect(resolved.issues.some((issue) => issue.code === 'unknown_faculty')).toBe(true);
   });
 
+
+
+  it('warns when a faculty email cannot be resolved even when no name is supplied', () => {
+    const emailHeaders = inferHeaderMap([
+      'course_code',
+      'section_code',
+      'faculty_email',
+      'days',
+      'start_time',
+      'end_time',
+      'room'
+    ]).map as any;
+    const { canonical } = canonicalizeScheduleRow(
+      {
+        course_code: 'DEMO 101',
+        section_code: 'A',
+        faculty_email: 'unknown@example.invalid',
+        days: 'MWF',
+        start_time: '10:00',
+        end_time: '11:00',
+        room: 'MB304'
+      },
+      2,
+      emailHeaders,
+      'key'
+    );
+
+    const resolved = resolveScheduleRow(canonical!, context);
+    expect(resolved.resolved.facultyId).toBeNull();
+    expect(resolved.issues.some((issue) => issue.code === 'unknown_faculty_email')).toBe(true);
+  });
+
+
+  it('does not silently resolve a faculty email shared by multiple records', () => {
+    const emailHeaders = inferHeaderMap([
+      'course_code',
+      'section_code',
+      'faculty_email',
+      'days',
+      'start_time',
+      'end_time',
+      'room'
+    ]).map as any;
+    const duplicateEmailContext: ImportValidationContext = {
+      ...context,
+      facultyByEmail: new Map([
+        ['shared@example.edu', [
+          { id: 'faculty-1', displayName: 'Prof. One' },
+          { id: 'faculty-2', displayName: 'Prof. Two' }
+        ]]
+      ])
+    };
+    const { canonical } = canonicalizeScheduleRow(
+      {
+        course_code: 'DEMO 101',
+        section_code: 'A',
+        faculty_email: 'shared@example.edu',
+        days: 'MWF',
+        start_time: '10:00',
+        end_time: '11:00',
+        room: 'MB304'
+      },
+      2,
+      emailHeaders,
+      'key'
+    );
+
+    const resolved = resolveScheduleRow(canonical!, duplicateEmailContext);
+    expect(resolved.resolved.facultyId).toBeNull();
+    expect(resolved.issues.some((issue) => issue.code === 'ambiguous_faculty_email')).toBe(true);
+  });
+
   it('rejects unknown rooms', () => {
     const result = canonicalizeScheduleRow(
       { course_code: 'DEMO 101', section_code: 'A', days: 'MWF', start_time: '10:00', end_time: '11:00', room: 'MB999' },

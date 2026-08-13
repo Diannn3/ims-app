@@ -8,6 +8,23 @@ export function normalizeHumanQuery(value: string) {
   return value.trim().normalize('NFKC').replace(/\s+/g, ' ');
 }
 
+/**
+ * Normalize free-text search input before it reaches a PostgREST filter.
+ *
+ * `%` and `_` are SQL LIKE wildcards and a backslash is commonly used as an
+ * escape character. Students searching the directory do not need wildcard
+ * syntax, so strip those characters instead of letting a query accidentally
+ * turn into an unbounded wildcard scan. Control characters are removed and the
+ * public search contract is capped to a small, predictable length.
+ */
+export function normalizeSearchQuery(value: string, maxLength = 80) {
+  return normalizeHumanQuery(value)
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/[%_\\]/g, '')
+    .slice(0, Math.max(0, maxLength))
+    .trim();
+}
+
 export function weekdayName(value: number | null) {
   if (!value || value < 1 || value > 7) return 'By arrangement';
   return WEEKDAYS[value - 1];

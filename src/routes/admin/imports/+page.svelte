@@ -98,10 +98,10 @@
       <input name="schedule" type="file" accept=".csv,text/csv" required />
     </label>
 
-    <label class="check-row">
-      <input type="checkbox" name="authoritativeSnapshot" />
-      <span><strong>Complete-source snapshot</strong><small>Mark only when the file represents the full source for this term. Missing-row reconciliation is intentionally disabled until that workflow is reviewed.</small></span>
-    </label>
+    <div class="check-row check-row--disabled" aria-label="Complete-source snapshot is not enabled yet">
+      <input type="checkbox" disabled aria-hidden="true" tabindex="-1" />
+      <span><strong>Complete-source snapshot</strong><small>Not enabled yet. This importer only adds or updates rows it can identify safely; it will not infer that missing rows should be retired.</small></span>
+    </div>
 
     <button
       class="button primary"
@@ -127,7 +127,7 @@
       <div><code>faculty_email</code><span>Preferred identity</span></div>
       <div><code>source_record_key</code><span>Optional · strongly recommended</span></div>
     </div>
-    <p class="contract-note">Unknown rooms fail validation. Unknown faculty stay unresolved and never create a faculty profile automatically. A stable source_record_key makes future corrections reliably idempotent.</p>
+    <p class="contract-note">Unknown rooms fail validation. Unknown faculty stay unresolved and never create a faculty profile automatically. V1 assumes one canonical source row per course + section unless you provide a stable <code>source_record_key</code>; sources with multiple independent meeting rows for the same section must provide that key.</p>
   </aside>
 </section>
 
@@ -168,6 +168,7 @@
   input[type='file'] { padding:.5rem; }
   .check-row { display:grid; grid-template-columns:auto 1fr; gap:.7rem; align-items:start; padding:.8rem; border:1px solid var(--line-soft); border-radius:var(--radius-md); background:var(--surface-subtle); cursor:pointer; }
   .check-row input { width:20px; height:20px; margin-top:.1rem; accent-color:var(--ims-blue-deep); }
+  .check-row--disabled { cursor:not-allowed; opacity:.72; }
   .check-row span { display:grid; gap:.2rem; }
   .check-row small { color:var(--text-muted); line-height:1.45; }
   .inline-alert { padding:.75rem; border-radius:var(--radius-md); font-weight:700; }

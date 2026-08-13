@@ -8,18 +8,20 @@
 -- Every published record is also review_status='verified' after migration 004.
 -- -----------------------------------------------------------------------------
 
-insert into public.data_sources (id, label, source_type, authority, notes)
+insert into public.data_sources (id, label, source_type, authority, notes, public_metadata)
 values (
   '00000000-0000-0000-0000-000000000000',
   'Synthetic Demo Seed',
   'other',
   'Development fixture only',
-  'Never treat these academic records as real UPLB data.'
+  'Never treat these academic records as real UPLB data.',
+  true
 )
 on conflict (id) do update set
   label = excluded.label,
   authority = excluded.authority,
-  notes = excluded.notes;
+  notes = excluded.notes,
+  public_metadata = excluded.public_metadata;
 
 insert into public.buildings (
   id, name, short_name, publication_status, review_status, source_id
@@ -44,27 +46,125 @@ on conflict (id) do update set
   display_order = excluded.display_order;
 
 insert into public.spaces (
-  id, building_id, floor_id, name, kind, publication_status, review_status, source_id
+  id, building_id, floor_id, name, kind, subtitle, is_public,
+  publication_status, review_status, source_id, metadata
 )
 values
-  ('mb201', 'mb', 'mb-2f', 'MB 201', 'classroom', 'published', 'verified', '00000000-0000-0000-0000-000000000000'),
-  ('mb205', 'mb', 'mb-2f', 'MB 205', 'faculty_office', 'published', 'verified', '00000000-0000-0000-0000-000000000000'),
-  ('mb209', 'mb', 'mb-2f', 'MB 209 (Math Clinic)', 'facility', 'published', 'verified', '00000000-0000-0000-0000-000000000000'),
-  ('mb304', 'mb', 'mb-3f', 'MB 304', 'classroom', 'published', 'verified', '00000000-0000-0000-0000-000000000000')
+  ('mb100', 'mb', 'mb-gf', 'MB 100', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb101a', 'mb', 'mb-gf', 'MB 101A', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb101b', 'mb', 'mb-gf', 'MB 101B', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb103a', 'mb', 'mb-gf', 'MB 103A', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb103b', 'mb', 'mb-gf', 'MB 103B', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb102', 'mb', 'mb-gf', 'MB 102', 'lab', 'Math Lab', true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb104', 'mb', 'mb-gf', 'MB 104', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-men-toilet', 'mb', 'mb-gf', 'Men''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-women-toilet', 'mb', 'mb-gf', 'Women''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-west-stairs', 'mb', 'mb-gf', 'West Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-center-stairs', 'mb', 'mb-gf', 'Center Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-east-stairs', 'mb', 'mb-gf', 'East Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('gf-main-entrance-space', 'mb', 'mb-gf', 'Main Entrance', 'entrance', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb201', 'mb', 'mb-2f', 'MB 201', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb203', 'mb', 'mb-2f', 'MB 203', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb205', 'mb', 'mb-2f', 'MB 205', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb207', 'mb', 'mb-2f', 'MB 207', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb209', 'mb', 'mb-2f', 'MB 209', 'service', 'Math Clinic', true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb202', 'mb', 'mb-2f', 'MB 202', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb204', 'mb', 'mb-2f', 'MB 204', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb206', 'mb', 'mb-2f', 'MB 206', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb208', 'mb', 'mb-2f', 'MB 208', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb210', 'mb', 'mb-2f', 'MB 210', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb211', 'mb', 'mb-2f', 'MB 211', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('2f-men-toilet', 'mb', 'mb-2f', 'Men''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('2f-women-toilet', 'mb', 'mb-2f', 'Women''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('2f-west-stairs', 'mb', 'mb-2f', 'West Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('2f-center-stairs', 'mb', 'mb-2f', 'Center Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('2f-east-stairs', 'mb', 'mb-2f', 'East Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb301', 'mb', 'mb-3f', 'MB 301', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb303', 'mb', 'mb-3f', 'MB 303', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb305', 'mb', 'mb-3f', 'MB 305', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb307', 'mb', 'mb-3f', 'MB 307', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb309', 'mb', 'mb-3f', 'MB 309', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb302', 'mb', 'mb-3f', 'MB 302', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb304', 'mb', 'mb-3f', 'MB 304', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb306', 'mb', 'mb-3f', 'MB 306', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('mb308', 'mb', 'mb-3f', 'MB 308', 'classroom', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('3f-men-toilet', 'mb', 'mb-3f', 'Men''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('3f-women-toilet', 'mb', 'mb-3f', 'Women''s Toilet', 'toilet', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('3f-west-stairs', 'mb', 'mb-3f', 'West Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('3f-center-stairs', 'mb', 'mb-3f', 'Center Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb),
+  ('3f-east-stairs', 'mb', 'mb-3f', 'East Stairs', 'stairs', null, true, 'published', 'verified', '00000000-0000-0000-0000-000000000000', '{"fixture":true,"mapVerificationStatus":"needs-site-verification"}'::jsonb)
 on conflict (id) do update set
+  building_id = excluded.building_id,
+  floor_id = excluded.floor_id,
   name = excluded.name,
   kind = excluded.kind,
+  subtitle = excluded.subtitle,
+  is_public = excluded.is_public,
   publication_status = excluded.publication_status,
-  review_status = excluded.review_status;
+  review_status = excluded.review_status,
+  source_id = excluded.source_id,
+  metadata = excluded.metadata;
 
 insert into public.space_aliases (space_id, alias, normalized_alias)
 values
-  ('mb201', '201', '201'),
-  ('mb205', '205', '205'),
-  ('mb209', 'Math Clinic', 'mathclinic'),
-  ('mb209', '209', '209'),
-  ('mb304', '304', '304')
-on conflict (space_id, normalized_alias) do nothing;
+  ('mb100', '100', '100'),
+  ('mb100', 'MB100', 'mb100'),
+  ('mb101a', 'MB101A', 'mb101a'),
+  ('mb101b', 'MB101B', 'mb101b'),
+  ('mb103a', 'MB103A', 'mb103a'),
+  ('mb103b', 'MB103B', 'mb103b'),
+  ('mb102', '102', '102'),
+  ('mb102', 'MB102', 'mb102'),
+  ('mb102', 'math lab', 'mathlab'),
+  ('mb102', 'lab', 'lab'),
+  ('mb104', '104', '104'),
+  ('mb104', 'MB104', 'mb104'),
+  ('gf-men-toilet', 'men toilet', 'mentoilet'),
+  ('gf-men-toilet', 'mens toilet', 'menstoilet'),
+  ('gf-men-toilet', 'cr', 'cr'),
+  ('gf-women-toilet', 'women toilet', 'womentoilet'),
+  ('gf-women-toilet', 'womens toilet', 'womenstoilet'),
+  ('gf-women-toilet', 'cr', 'cr'),
+  ('gf-west-stairs', 'stairs west', 'stairswest'),
+  ('gf-center-stairs', 'stairs center', 'stairscenter'),
+  ('gf-east-stairs', 'stairs east', 'stairseast'),
+  ('gf-main-entrance-space', 'entrance', 'entrance'),
+  ('gf-main-entrance-space', 'main entrance', 'mainentrance'),
+  ('mb201', 'MB201', 'mb201'),
+  ('mb203', 'MB203', 'mb203'),
+  ('mb205', 'MB205', 'mb205'),
+  ('mb207', 'MB207', 'mb207'),
+  ('mb209', 'MB209', 'mb209'),
+  ('mb209', 'math clinic', 'mathclinic'),
+  ('mb209', 'clinic', 'clinic'),
+  ('mb202', 'MB202', 'mb202'),
+  ('mb204', 'MB204', 'mb204'),
+  ('mb206', 'MB206', 'mb206'),
+  ('mb208', 'MB208', 'mb208'),
+  ('mb210', 'MB210', 'mb210'),
+  ('mb211', 'MB211', 'mb211'),
+  ('2f-men-toilet', 'men toilet', 'mentoilet'),
+  ('2f-men-toilet', 'mens toilet', 'menstoilet'),
+  ('2f-men-toilet', 'cr', 'cr'),
+  ('2f-women-toilet', 'women toilet', 'womentoilet'),
+  ('2f-women-toilet', 'womens toilet', 'womenstoilet'),
+  ('2f-women-toilet', 'cr', 'cr'),
+  ('mb301', 'MB301', 'mb301'),
+  ('mb303', 'MB303', 'mb303'),
+  ('mb305', 'MB305', 'mb305'),
+  ('mb307', 'MB307', 'mb307'),
+  ('mb309', 'MB309', 'mb309'),
+  ('mb302', 'MB302', 'mb302'),
+  ('mb304', 'MB304', 'mb304'),
+  ('mb306', 'MB306', 'mb306'),
+  ('mb308', 'MB308', 'mb308'),
+  ('3f-men-toilet', 'men toilet', 'mentoilet'),
+  ('3f-men-toilet', 'mens toilet', 'menstoilet'),
+  ('3f-men-toilet', 'cr', 'cr'),
+  ('3f-women-toilet', 'women toilet', 'womentoilet'),
+  ('3f-women-toilet', 'womens toilet', 'womenstoilet'),
+  ('3f-women-toilet', 'cr', 'cr')
+on conflict (space_id, normalized_alias) do update set alias = excluded.alias;
 
 -- -----------------------------------------------------------------------------
 -- 1. Current synthetic academic term.
@@ -373,3 +473,24 @@ on conflict (id) do update set
   ends_at = excluded.ends_at,
   publication_status = excluded.publication_status,
   review_status = excluded.review_status;
+
+-- -----------------------------------------------------------------------------
+-- 7. Finalize the synthetic public schedule after child-integrity triggers.
+-- This is fixture-only setup executed by the local seed owner, not application flow.
+-- -----------------------------------------------------------------------------
+
+update public.sections
+set review_status = 'verified', publication_status = 'published', updated_at = now()
+where id in (
+  '22222222-2222-2222-2222-222222222221',
+  '22222222-2222-2222-2222-222222222222',
+  '22222222-2222-2222-2222-222222222223'
+);
+
+update public.section_meetings
+set review_status = 'verified', publication_status = 'published'
+where section_id in (
+  '22222222-2222-2222-2222-222222222221',
+  '22222222-2222-2222-2222-222222222222',
+  '22222222-2222-2222-2222-222222222223'
+);

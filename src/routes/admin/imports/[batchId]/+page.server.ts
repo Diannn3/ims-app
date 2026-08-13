@@ -1,6 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireRole } from '$lib/server/auth';
+import { safeAdminActionError } from '$lib/server/admin-errors';
 import { getImportBatch, getImportSetup } from '$lib/data-access/imports/repository.server';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -42,7 +43,7 @@ export const actions: Actions = {
       .eq('issue_type', 'warning')
       .is('acknowledged_at', null);
 
-    if (updateError) return fail(400, { actionError: updateError.message });
+    if (updateError) return fail(400, { actionError: safeAdminActionError(updateError, 'Could not acknowledge the import warnings.', 'imports:acknowledge') });
     return { acknowledged: true };
   },
 
@@ -59,7 +60,7 @@ export const actions: Actions = {
       p_batch_id: event.params.batchId,
       p_preview_hash: previewHash
     });
-    if (applyError) return fail(400, { actionError: applyError.message });
+    if (applyError) return fail(400, { actionError: safeAdminActionError(applyError, 'Could not apply this import.', 'imports:apply') });
     throw redirect(303, `/admin/imports/${event.params.batchId}?applied=1`);
   },
 
@@ -73,7 +74,7 @@ export const actions: Actions = {
       .update({ status: 'rejected', updated_at: new Date().toISOString() })
       .eq('id', event.params.batchId)
       .in('status', ['staged', 'validation_failed', 'ready']);
-    if (rejectError) return fail(400, { actionError: rejectError.message });
+    if (rejectError) return fail(400, { actionError: safeAdminActionError(rejectError, 'Could not reject this import.', 'imports:reject') });
     throw redirect(303, `/admin/imports/${event.params.batchId}`);
   }
 };

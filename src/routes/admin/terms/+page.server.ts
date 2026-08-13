@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireRole } from '$lib/server/auth';
+import { safeAdminActionError } from '$lib/server/admin-errors';
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.supabase) return { terms: [] };
@@ -25,7 +26,7 @@ export const actions: Actions = {
     if (!id || !academicYear || !termName) return fail(400, { message: 'Term ID, academic year, and term name are required.' });
     if (startsOn && endsOn && endsOn < startsOn) return fail(400, { message: 'Term end date must be on or after the start date.' });
     const { error } = await supabase.from('academic_terms').insert({ id, academic_year: academicYear, term_name: termName, starts_on: startsOn, ends_on: endsOn, is_current: false });
-    if (error) return fail(400, { message: error.message });
+    if (error) return fail(400, { message: safeAdminActionError(error, 'Could not create the academic term.', 'terms:create') });
     return { created: true };
   },
   makeCurrent: async (event) => {
@@ -36,7 +37,7 @@ export const actions: Actions = {
     const termId = String(form.get('termId') ?? '').trim();
     if (!termId) return fail(400, { message: 'Academic term is required.' });
     const { error } = await supabase.rpc('set_current_academic_term', { p_term_id: termId });
-    if (error) return fail(400, { message: error.message });
+    if (error) return fail(400, { message: safeAdminActionError(error, 'Could not change the current academic term.', 'terms:set-current') });
     return { currentUpdated: true };
   }
 };

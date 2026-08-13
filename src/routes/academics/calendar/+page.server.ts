@@ -3,8 +3,9 @@ import { createAcademicRepository } from '$lib/data-access/academic/repository.s
 
 export const load: PageServerLoad = async ({ locals }) => {
   const repository = createAcademicRepository(locals.supabase);
+  const dates = await repository.listAcademicDates();
   return {
     repositoryStatus: repository.status(),
-    dates: await repository.listAcademicDates()
+    dates
   };
 };

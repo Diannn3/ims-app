@@ -14,28 +14,52 @@
     "test:e2e": "playwright test",
     "test:db": "supabase test db",
     "verify:project": "node scripts/verify-project.mjs",
-    "verify": "npm run verify:data && npm run verify:project",
+    "verify": "npm run verify:data && npm run verify:project && npm run verify:seed-map && npm run verify:pgtap-plans && npm run verify:sql-security && npm run verify:syntax && npm run verify:imports && npm run verify:data-contracts && npm run verify:web-safety && npm run verify:secrets && npm run verify:gate-config && npm run smoke:domain",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:stop": "supabase stop",
     "types:db": "supabase gen types typescript --local > src/lib/database.types.ts",
-    "test": "npm run test:unit && npm run test:db && npm run test:e2e"
+    "test": "npm run test:unit && npm run test:db && npm run test:e2e",
+    "check:domain": "tsc -p tsconfig.domain.json",
+    "types:check": "node scripts/check-database-types.mjs",
+    "db:lint": "supabase db lint --local --schema public,private --level warning --fail-on error",
+    "doctor": "node scripts/doctor.mjs",
+    "doctor:strict": "node scripts/doctor.mjs --strict",
+    "gate": "node scripts/run-validation-gate.mjs",
+    "verify:sql-security": "node scripts/verify-sql-security.mjs",
+    "verify:syntax": "node scripts/verify-source-syntax.mjs",
+    "smoke:domain": "node --experimental-strip-types scripts/smoke-domain.mjs",
+    "verify:gate-config": "node scripts/verify-gate-config.mjs",
+    "evidence:app": "node scripts/write-validation-evidence.mjs --kind=app",
+    "evidence:database": "node scripts/write-validation-evidence.mjs --kind=database",
+    "evidence:integration": "node scripts/write-validation-evidence.mjs --kind=integration",
+    "verify:imports": "node scripts/verify-local-imports.mjs",
+    "verify:web-safety": "node scripts/verify-web-safety.mjs",
+    "verify:secrets": "node scripts/verify-secrets.mjs",
+    "verify:lock": "node scripts/verify-lockfile.mjs",
+    "verify:seed-map": "node scripts/verify-seed-map-parity.mjs",
+    "verify:pgtap-plans": "node scripts/verify-pgtap-plans.mjs",
+    "verify:data-contracts": "node scripts/verify-data-access-contracts.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.12.4",
-    "@supabase/supabase-js": "^2.110.9",
-    "csv-parse": "^7.0.1"
+    "@supabase/ssr": "0.12.4",
+    "@supabase/supabase-js": "2.110.9",
+    "csv-parse": "7.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.0",
-    "@sveltejs/adapter-auto": "^6.0.0",
-    "@sveltejs/kit": "^2.70.0",
-    "@sveltejs/vite-plugin-svelte": "^6.0.0",
-    "@testing-library/svelte": "^5.2.0",
-    "svelte": "^5.56.0",
-    "svelte-check": "^4.7.0",
-    "typescript": "^5.9.0",
-    "vite": "^7.0.0",
-    "vitest": "^3.2.0"
+    "@playwright/test": "1.62.0",
+    "@sveltejs/adapter-auto": "6.0.0",
+    "@sveltejs/kit": "2.70.0",
+    "@sveltejs/vite-plugin-svelte": "6.0.0",
+    "@testing-library/svelte": "5.2.0",
+    "svelte": "5.56.0",
+    "svelte-check": "4.7.0",
+    "typescript": "5.9.0",
+    "vite": "7.0.0",
+    "vitest": "3.2.0",
+    "supabase": "2.110.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

@@ -53,7 +53,7 @@ Do not claim production-grade accessibility routing, emergency evacuation routin
 
 Requirements:
 
-- Node.js 20+ (22 recommended)
+- Node.js 22+ (the repository and CI currently pin the Node 22 line)
 - npm
 - Supabase CLI for local database/auth/RLS testing
 
@@ -81,6 +81,20 @@ npm run build
 ```
 
 `npm run test:db` requires a running local Supabase stack. `npm run types:db` must be rerun after schema changes; generated database types should not be hand-maintained.
+
+### Seeded integration gate
+
+The repository also defines `.github/workflows/integration-gate.yml`. It starts a fresh local Supabase stack, replays migrations and synthetic seed data, creates **local-only** editor/admin Auth fixtures, builds the production SvelteKit bundle, and runs seeded browser journeys against the real SSR/RLS/import/review path. The local service-role credential is used only inside the fixture-preparation step and is never persisted into browser-visible environment variables.
+
+The browser governance journey proves the intended fail-closed chain:
+
+```text
+CSV → stage/validate → admin apply → anonymous still cannot see it
+    → editor verify → anonymous still cannot see it
+    → admin publish → public course schedule appears
+```
+
+The integration fixture script refuses non-local Supabase hosts. Do not reuse those synthetic credentials against a hosted project.
 
 ## Real-data rule
 
@@ -117,3 +131,5 @@ The application stays on **SvelteKit**. Astro is not part of the app runtime. Th
 - `docs/QR_ANCHORS.md`
 - `docs/CI.md`
 - Existing map/routing/grade/security specifications under `docs/`
+
+For the first fully reproducible validation run, see `docs/FIRST_GREEN_RUN.md`.

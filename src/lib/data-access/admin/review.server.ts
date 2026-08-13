@@ -6,6 +6,7 @@ export type ScheduleReviewMeeting = {
   startsAt: string;
   endsAt: string;
   roomId: string | null;
+  roomName: string | null;
   reviewStatus: string;
   publicationStatus: string;
 };
@@ -70,7 +71,13 @@ export async function listScheduleReviewItems(supabase: SupabaseClient): Promise
     ? await supabase.from('faculty').select('id, display_name').in('id', facultyIds)
     : { data: [] as any[] };
 
+  const spaceIds = [...new Set((meetings ?? []).map((meeting: any) => meeting.space_id).filter(Boolean))];
+  const { data: spaces } = spaceIds.length
+    ? await supabase.from('spaces').select('id, name').in('id', spaceIds)
+    : { data: [] as any[] };
+
   const courseById = new Map((courses ?? []).map((row: any) => [row.id, row]));
+  const spaceById = new Map((spaces ?? []).map((row: any) => [row.id, row.name]));
   const facultyById = new Map((faculty ?? []).map((row: any) => [row.id, row]));
   const meetingsBySection = new Map<string, any[]>();
   const facultyBySection = new Map<string, ScheduleReviewFaculty[]>();
@@ -112,6 +119,7 @@ export async function listScheduleReviewItems(supabase: SupabaseClient): Promise
         startsAt: meeting.starts_at,
         endsAt: meeting.ends_at,
         roomId: meeting.space_id,
+        roomName: meeting.space_id ? spaceById.get(meeting.space_id) ?? null : null,
         reviewStatus: meeting.review_status,
         publicationStatus: meeting.publication_status
       })),

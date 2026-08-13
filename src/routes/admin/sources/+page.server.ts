@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireRole } from '$lib/server/auth';
+import { safeAdminActionError } from '$lib/server/admin-errors';
 
 const sourceTypes = [
   'official_web',
@@ -25,8 +26,8 @@ function safeHttpsUrl(value: string) {
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.supabase) return { sources: [] };
   const { data } = await locals.supabase
-    .from('public_data_sources')
-    .select('id, label, source_type, source_url, authority, created_at')
+    .from('data_sources')
+    .select('id, label, source_type, source_url, authority, public_metadata, created_at')
     .order('label');
   return { sources: data ?? [] };
 };
@@ -43,6 +44,7 @@ export const actions: Actions = {
     const authority = String(form.get('authority') ?? '').trim() || null;
     const sourceUrlRaw = String(form.get('sourceUrl') ?? '').trim();
     const notes = String(form.get('notes') ?? '').trim() || null;
+    const publicMetadata = form.get('publicMetadata') === 'on';
 
     if (!label || !sourceTypes.includes(sourceType as (typeof sourceTypes)[number])) {
       return fail(400, { message: 'Enter a source label and choose a valid source type.' });
@@ -58,10 +60,11 @@ export const actions: Actions = {
       source_type: sourceType,
       source_url: sourceUrl,
       authority,
-      notes
+      notes,
+      public_metadata: publicMetadata
     });
 
-    if (error) return fail(400, { message: error.message });
+    if (error) return fail(400, { message: safeAdminActionError(error, 'Could not create the data source.', 'sources:create') });
     return { created: true };
   }
 };

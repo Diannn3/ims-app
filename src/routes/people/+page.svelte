@@ -1,6 +1,7 @@
 <script lang="ts">
   import FacultyCard from '$lib/components/faculty/FacultyCard.svelte';
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   let { data } = $props();
 </script>
 
@@ -43,6 +44,8 @@
         title="Faculty data is not connected yet"
         message="The app will show verified faculty profiles here after an official source is configured."
       />
+    {:else if !data.repositoryStatus.available}
+      <AcademicErrorState message={data.repositoryStatus.message} />
     {:else if data.faculty.length === 0}
       <AcademicEmptyState
         title={data.query ? 'No published faculty matched that search' : 'No published faculty profiles yet'}

@@ -12,7 +12,7 @@ export type ImportSetup = {
 export async function getImportSetup(supabase: SupabaseClient): Promise<ImportSetup> {
   const [{ data: sources }, { data: terms }] = await Promise.all([
     supabase
-      .from('public_data_sources')
+      .from('data_sources')
       .select('id, label, source_type, authority')
       .order('label'),
     supabase
@@ -51,13 +51,17 @@ export async function buildImportValidationContext(
     if (row.normalized_code) coursesByCode.set(normalizeCourse(row.normalized_code), { id: row.id, code: row.code });
   }
 
-  const facultyByEmail = new Map<string, { id: string; displayName: string }>();
+  const facultyByEmail = new Map<string, Array<{ id: string; displayName: string }>>();
   const facultyByName = new Map<string, Array<{ id: string; displayName: string }>>();
   for (const row of faculty ?? []) {
     const entry = { id: row.id, displayName: row.display_name };
     if (row.official_email) {
       const email = normalizeEmail(row.official_email);
-      if (email) facultyByEmail.set(email, entry);
+      if (email) {
+        const values = facultyByEmail.get(email) ?? [];
+        values.push(entry);
+        facultyByEmail.set(email, values);
+      }
     }
     const normalizedName = normalizeFacultyName(row.display_name)?.toLowerCase();
     if (normalizedName) {
@@ -97,89 +101,46 @@ export async function persistStagedScheduleBatch(input: {
   supabase: SupabaseClient;
   sourceId: string;
   termId: string;
-  importedBy: string;
   filename: string;
   previewHash: string;
   authoritativeSnapshot: boolean;
   rows: StagedScheduleRow[];
   existingHashes: Map<string, string>;
-  counts: {
-    rows: number;
-    valid: number;
-    changed: number;
-    unchanged: number;
-    invalid: number;
-    errors: number;
-    warnings: number;
-    info: number;
-  };
 }) {
-  const status = input.counts.errors > 0 ? 'validation_failed' : 'ready';
-  const { data: batch, error: batchError } = await input.supabase
-    .from('import_batches')
-    .insert({
-      source_id: input.sourceId,
-      term_id: input.termId,
-      imported_by: input.importedBy,
-      status,
-      row_count: input.counts.rows,
-      valid_row_count: input.counts.valid + input.counts.changed + input.counts.unchanged,
-      error_count: input.counts.errors,
-      warning_count: input.counts.warnings,
-      filename: input.filename,
-      preview_hash: input.previewHash,
-      schema_version: 1,
-      authoritative_snapshot: input.authoritativeSnapshot,
-      summary: {
-        valid: input.counts.valid,
-        changed: input.counts.changed,
-        unchanged: input.counts.unchanged,
-        invalid: input.counts.invalid,
-        info: input.counts.info
-      }
-    })
-    .select('id')
-    .single();
-
-  if (batchError || !batch) throw new Error(batchError?.message ?? 'Could not create import batch.');
-
-  const rowPayload = input.rows.map((row) => ({
-    batch_id: batch.id,
-    row_number: row.rowNumber,
-    entity_type: 'schedule_v1',
-    raw_payload: row.raw,
-    normalized_payload: row.resolved,
+  // Staging is one SECURITY DEFINER RPC so a failed row/issue insert cannot leave a
+  // partially populated batch marked ready. The RPC derives authoritative counts
+  // again and records auth.uid() itself; browser/server supplied aggregate counts are
+  // deliberately not part of the persistence contract.
+  const rows = input.rows.map((row) => ({
+    rowNumber: row.rowNumber,
+    rawPayload: row.raw,
+    normalizedPayload: row.resolved,
     status: statusForStagedRow(row, input.existingHashes),
-    source_record_key: row.canonical?.sourceRecordKey ?? null,
-    content_hash: row.contentHash
-  }));
-
-  const { data: insertedRows, error: rowsError } = rowPayload.length
-    ? await input.supabase.from('import_rows').insert(rowPayload).select('id, row_number')
-    : { data: [], error: null };
-
-  if (rowsError) throw new Error(rowsError.message);
-  const idByRow = new Map((insertedRows ?? []).map((row: any) => [row.row_number, row.id]));
-
-  const issues = input.rows.flatMap((row) =>
-    row.issues.map((issue) => ({
-      import_row_id: idByRow.get(issue.rowNumber),
-      issue_type: issue.severity,
-      error_code: issue.code,
+    sourceRecordKey: row.canonical?.sourceRecordKey ?? null,
+    contentHash: row.contentHash,
+    issues: row.issues.map((issue) => ({
+      severity: issue.severity,
+      code: issue.code,
       message: issue.message,
       field: issue.field,
-      original_value: issue.originalValue ?? null,
-      normalized_value: issue.normalizedValue ?? null,
-      suggested_value: issue.suggestedValue ?? null
+      originalValue: issue.originalValue ?? null,
+      normalizedValue: issue.normalizedValue ?? null,
+      suggestedValue: issue.suggestedValue ?? null
     }))
-  ).filter((issue) => Boolean(issue.import_row_id));
+  }));
 
-  if (issues.length) {
-    const { error: issuesError } = await input.supabase.from('import_issues').insert(issues);
-    if (issuesError) throw new Error(issuesError.message);
-  }
+  const { data: batchId, error } = await input.supabase.rpc('stage_schedule_import_batch', {
+    p_source_id: input.sourceId,
+    p_term_id: input.termId,
+    p_filename: input.filename,
+    p_preview_hash: input.previewHash,
+    p_rows: rows,
+    p_schema_version: 1,
+    p_authoritative_snapshot: input.authoritativeSnapshot
+  } as any);
 
-  return batch.id as string;
+  if (error || !batchId) throw new Error(error?.message ?? 'Could not stage import batch.');
+  return batchId as string;
 }
 
 export async function listImportBatches(supabase: SupabaseClient) {

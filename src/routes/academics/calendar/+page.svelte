@@ -1,5 +1,6 @@
 <script lang="ts">
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   import SourceBadge from '$lib/components/academic/SourceBadge.svelte';
   let { data } = $props();
 
@@ -18,6 +19,8 @@
 
   {#if !data.repositoryStatus.configured}
     <AcademicEmptyState title="Calendar data is not connected yet" message="No academic repository is configured in this deployment." />
+  {:else if !data.repositoryStatus.available}
+    <AcademicErrorState message={data.repositoryStatus.message} />
   {:else if data.dates.length === 0}
     <AcademicEmptyState title="No published academic dates yet" message="Dates appear only after their source has been reviewed and published." />
   {:else}

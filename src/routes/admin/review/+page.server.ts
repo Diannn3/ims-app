@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireRole } from '$lib/server/auth';
+import { safeAdminActionError } from '$lib/server/admin-errors';
 import { listScheduleReviewItems } from '$lib/data-access/admin/review.server';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -23,7 +24,7 @@ export const actions: Actions = {
       p_status: 'verified',
       p_note: note
     });
-    if (error) return fail(400, { reviewError: error.message, sectionId });
+    if (error) return fail(400, { reviewError: safeAdminActionError(error, 'Could not verify this schedule.', 'review:verify'), sectionId });
     return { reviewSuccess: 'Schedule verified.', sectionId };
   },
 
@@ -38,7 +39,7 @@ export const actions: Actions = {
       p_status: 'needs_verification',
       p_note: note
     });
-    if (error) return fail(400, { reviewError: error.message, sectionId });
+    if (error) return fail(400, { reviewError: safeAdminActionError(error, 'Could not return this schedule for correction.', 'review:return'), sectionId });
     return { reviewSuccess: 'Schedule returned for verification.', sectionId };
   },
 
@@ -53,7 +54,7 @@ export const actions: Actions = {
       p_publish: true,
       p_note: note
     });
-    if (error) return fail(400, { reviewError: error.message, sectionId });
+    if (error) return fail(400, { reviewError: safeAdminActionError(error, 'Could not publish this schedule.', 'review:publish'), sectionId });
     return { reviewSuccess: 'Schedule published.', sectionId };
   },
 
@@ -68,7 +69,7 @@ export const actions: Actions = {
       p_publish: false,
       p_note: note
     });
-    if (error) return fail(400, { reviewError: error.message, sectionId });
+    if (error) return fail(400, { reviewError: safeAdminActionError(error, 'Could not withdraw this schedule.', 'review:withdraw'), sectionId });
     return { reviewSuccess: 'Schedule withdrawn from public view.', sectionId };
   }
 };

@@ -18,7 +18,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.110.0
 
       - name: Start local Supabase
         run: supabase start
@@ -26,5 +26,33 @@ jobs:
       - name: Reset migrations and synthetic seed
         run: supabase db reset
 
+      - name: Lint database functions and schema
+        run: supabase db lint --local --schema public,private --level warning --fail-on error
+
       - name: Run pgTAP security/invariant tests
         run: supabase test db
+
+      - name: Verify committed generated database types
+        env:
+          SUPABASE_BIN: supabase
+        run: node scripts/check-database-types.mjs
+
+      - name: Upload generated database types when review is required
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-database-types-review
+          path: validation-evidence/database.types.generated.ts
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Record successful database-gate evidence
+        run: node scripts/write-validation-evidence.mjs --kind=database
+
+      - name: Upload database-gate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-gate-evidence
+          path: validation-evidence/database-gate.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
   let { data } = $props();
 
   const kindLabel: Record<string, string> = {
@@ -37,6 +38,7 @@
           placeholder="MB 304, Math Clinic, course code, or faculty name"
           autocomplete="off"
           enterkeyhint="search"
+          maxlength="80"
         />
         <button class="button button--primary" type="submit">Search</button>
       </div>
@@ -53,11 +55,21 @@
         <span class="badge">{data.results.length} result{data.results.length === 1 ? '' : 's'}</span>
       </div>
 
-      {#if data.results.length === 0}
+      {#if data.repositoryStatus.configured && !data.repositoryStatus.available}
+        <AcademicErrorState message="Room and facility results are still available, but academic search could not be loaded right now." />
+      {/if}
+
+      {#if data.results.length === 0 && data.repositoryStatus.available}
         <div class="empty-state card card--flat">
           <span class="badge badge--yellow">No match</span>
           <h2>Nothing published matched that search.</h2>
           <p>Try a room code such as “MB 304”, “Math Clinic”, or a shorter academic search term.</p>
+        </div>
+      {:else if data.results.length === 0}
+        <div class="empty-state card card--flat">
+          <span class="badge badge--yellow">No room match</span>
+          <h2>No building result matched that search.</h2>
+          <p>Academic search is unavailable in this deployment, but you can still search room codes and facilities.</p>
         </div>
       {:else}
         <div class="result-list">

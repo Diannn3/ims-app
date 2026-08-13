@@ -22,7 +22,7 @@
       <div class="meta">
         <span class="badge badge--green">{modeLabel[item.mode]}</span>
         {#if item.spaceId}
-          <a href={`/room/${item.spaceId}`}>{item.spaceId.toUpperCase()}</a>
+          <a href={`/room/${item.spaceId}`}>{item.spaceName ?? item.spaceId.toUpperCase()}</a>
         {/if}
       </div>
       {#if item.notes}

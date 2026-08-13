@@ -13,10 +13,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   }
 
   const faculty = await repository.getFacultyBySlug(params.slug);
+  const repositoryStatus = repository.status();
+
+  if (!repositoryStatus.available) {
+    return { repositoryStatus, faculty: null };
+  }
+
   if (!faculty) throw error(404, 'Faculty profile not found.');
 
-  return {
-    repositoryStatus: repository.status(),
-    faculty
-  };
+  return { repositoryStatus, faculty };
 };

@@ -64,11 +64,11 @@ export async function searchAll(input: {
       kind: 'service' as const,
       id: service.id,
       title: service.name,
-      subtitle: service.spaceId ? `Academic service · ${service.spaceId.toUpperCase()}` : 'Academic service',
+      subtitle: service.spaceId ? `Academic service · ${service.spaceName ?? service.spaceId.toUpperCase()}` : 'Academic service',
       href: service.slug === 'math-clinic' ? '/services/math-clinic' : `/search?q=${encodeURIComponent(service.name)}`,
       score: scoreSearchCandidate(query, {
         title: service.name,
-        keywords: [service.description ?? '', service.spaceId ?? '']
+        keywords: [service.description ?? '', service.spaceName ?? '', service.spaceId ?? '']
       })
     })),
     ...researchAreas.map((area) => ({
