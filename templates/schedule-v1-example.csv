@@ -1,0 +1,2 @@
+source_record_key,course_code,section_code,days,start_time,end_time,room,faculty_email,faculty_name
+DEMO101-A-MWF-1000,DEMO 101,A,MWF,10:00 AM,11:00 AM,MB 304,dalpha@example.invalid,Prof. Demo Alpha

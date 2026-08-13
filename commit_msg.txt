@@ -1,0 +1,397 @@
+Implemented. I pulled the current master state into the cloud workspace, audited it against the architecture we finalized, and built the next major implementation layer on top of it. I also confirmed that the repository really does contain migrations 001–003, including the publication-security and import-staging work from the previous local-LLM/Codex pass.
+One blocker first: the connected GitHub integration currently lets me read the repo, but it rejected every write operation with a 403 Resource not accessible by integration. I tried creating a branch, a blob, and a file. So I did not pretend I pushed anything. Everything below is implemented in my cloud worktree and packaged for you; once the GitHub integration has write access, this can become a proper branch/PR.
+What I implemented
+1. Premium IMS frontend foundation
+I used your exact supplied IMS mark as the brand source and built a proper design system around it rather than making generic developer UI.
+The source logo gives us approximately:
+IMS Blue #009BFF
+IMS Green #17960E
+IMS Yellow #FAF807
+White
+For usable UI contrast, I added darker derivatives such as deep blue and deep green while keeping the original logo untouched.
+Implemented:
+full design-token system
+typography hierarchy
+cool-white/blue-tinted surfaces
+restrained green/yellow semantic accents
+reusable cards/buttons/badges
+visible keyboard focus
+reduced-motion behavior
+44px touch targets
+safe-area mobile navigation
+skip link
+stable #main-content
+desktop + mobile navigation
+responsive layouts
+proper wrapping for long academic names/URLs
+corrected logo aspect handling
+PWA manifest and branding
+Home / Map / Academics / People / Tools IA
+The app now visually treats IMS as an actual product identity instead of throwing blue Bootstrap-looking components everywhere.
+2. SvelteKit + Supabase server architecture
+I implemented the security boundary before multiplying academic screens.
+Added:
+src/hooks.server.ts src/app.d.ts src/lib/server/ ├── auth.ts └── supabase.ts
+We now use a request-scoped Supabase SSR client, not a global server singleton.
+Authentication flow:
+Request ↓ hooks.server.ts ↓ request-scoped Supabase client ↓ getClaims() ↓ profiles.role ↓ SvelteKit locals ↓ protected route
+This matches Supabase's current SSR direction: @supabase/ssr is the maintained SSR package, and verified claims/current-user checks should be used rather than trusting a cookie-loaded session object for authorization. ([npm](https://www.npmjs.com/package/%40supabase/ssr?utm_source=chatgpt.com))
+I've also updated the runtime dependency lines to current releases available through the official npm registry, including current @supabase/ssr, supabase-js, and csv-parse. ([npm](https://www.npmjs.com/package/%40supabase/ssr?activeTab=dependencies&utm_source=chatgpt.com))
+3. Staff authentication + RBAC
+Implemented staff authentication:
+/staff/sign-in /staff/sign-out
+And protected:
+/admin/*
+Roles are modeled as:
+student faculty content_editor map_editor admin
+Important security decision:
+authentication metadata does not decide someone's administrative role.
+A database profile does.
+I also added a database trigger that creates new authenticated users as:
+role = student
+by default.
+No user can simply send:
+{ "role": "admin" }
+during signup and become an administrator.
+4. Fixed the publication architecture
+The earlier architecture mixed:
+“Has this information been reviewed?”
+with:
+“Should students see it?”
+I separated those concerns.
+Institutional content now has a review concept:
+draft needs_verification verified
+while public exposure is controlled separately.
+Critical invariant:
+published ↓ MUST ALSO BE verified
+So:
+Verified but unpublished
+is valid.
+But:
+Published but unverified
+is rejected by database constraints.
+5. RLS/security hardening
+I added migration:
+004_academic_integration_security.sql
+It fixes the major issues identified by the audit.
+Among other things:
+public records must actually be published
+child relations inherit visibility appropriately
+only one current academic term can exist
+research areas now have a real publication lifecycle
+faculty notices respect faculty visibility
+import staging is no longer available to every authenticated account
+internal data-source notes aren't publicly exposed
+profile role escalation is blocked
+faculty cannot self-publish consultation records
+I added:
+private.has_any_role(...)
+as the central DB-level role check.
+So hiding an Admin button isn't our security system.
+RLS/RPC/database rules remain authoritative.
+6. Consultation ownership ≠ publishing authority
+This is an important one.
+A professor can eventually maintain their own consultation information, but cannot turn it directly into:
+Published
+Faculty can own/edit appropriate unpublished information.
+Editors/admins handle verification.
+Admins control public publication.
+That closes the self-publishing issue identified by the architecture audit.
+7. Public-safe provenance
+The real data_sources table can contain internal notes.
+I therefore created:
+public.public_data_sources
+which exposes only safe provenance such as:
+Source name Source type Authority Official URL
+Public academic pages can therefore show:
+Source: IMS Official Schedule
+Verified: Aug 2026
+without exposing internal moderation notes.
+8. Academic Knowledge Engine
+I implemented typed domain/read-model architecture:
+src/lib/domain/academic/ ├── types.ts ├── repository.ts └── formatters.ts src/lib/data-access/academic/ └── repository.server.ts
+Svelte components don't reconstruct database graphs.
+Instead:
+PostgreSQL ↓ repository ↓ CourseDetail ↓ page
+A CourseDetail already knows about:
+course ├── sections │ ├── meetings │ │ └── rooms │ └── instructors ├── prerequisites ├── current term └── source/freshness
+That means schema changes later don't force every Svelte component to understand relational joins.
+9. Academic pages
+Implemented the student-facing routes:
+/academics /course/[code] /people /faculty/[slug] /consultations /room/[id] /services/math-clinic /research /academics/forms /academics/calendar /academics/help /events
+And crucially, all of them support proper states:
+content available no published entity entity exists but no current-term records data source unavailable load failure
+There are no fake MATH 38 schedules.
+If we have no real schedule:
+No published current-term schedule is available yet.
+That's what the app says.
+10. Courses
+Course pages support the architecture for:
+Course ├── description ├── units ├── prerequisites ├── current sections │ ├── faculty │ ├── meeting schedule │ └── classroom ├── academic help └── source/freshness
+The seeded development path is deliberately synthetic:
+DEMO 101 ↓ Section A ↓ Prof. Demo Alpha ↓ MB 304
+so we can test the entire application without fabricating UPLB offerings.
+11. Faculty + consultations
+Implemented:
+faculty directory
+faculty profile
+public official contact fields
+office relationship
+office → room/map link
+current teaching
+research areas
+consultation schedule
+in-person / online / hybrid / by-appointment modes
+safe external URL filtering
+Consultation wording intentionally says:
+Scheduled consultation hours
+not:
+Professor is currently here
+because we aren't building faculty tracking.
+12. Room pages
+Implemented:
+/room/mb304
+Room pages intentionally merge two independent data owners:
+STATIC MAP DATA room name floor type route node + ACADEMIC DATABASE classes services faculty relationships
+This means MB 304 remains useful even when Supabase is offline or has no academic records.
+13. Universal Search V2
+I replaced the original space-only search concept with a search domain.
+Added:
+src/lib/domain/search/ ├── types.ts ├── rank.ts └── __tests__/ src/lib/data-access/search/ └── repository.server.ts
+It currently searches:
+Rooms Courses Faculty Services Research Resources
+Ranking starts deliberately simple:
+exact canonical match ↓ exact title / alias ↓ compact match ↓ prefix ↓ token prefix ↓ substring
+Examples:
+MB304 → MB 304 DEMO101 → DEMO 101 Alpha → Prof. Demo Alpha clinic → Math Clinic service + MB 209
+I intentionally did not add trigram/fuzzy magic yet. We can add it after actual search telemetry demonstrates a need.
+14. Math Building navigation
+The existing spatial architecture remains intact:
+spaces.json + semantic SVG + graph.json + A*
+Current structured prototype:
+43 spaces
+64 graph nodes
+67 graph edges
+The route verifier confirms that all space routing references resolve.
+Implemented/improved:
+interactive three-floor explorer
+room highlighting
+space search
+A* pathfinding
+same-floor routing
+cross-floor routing
+segmented floor routes
+textual directions
+room deep links
+map pan
+map zoom
+reset/fit controls
+keyboard-operable room controls
+browser pinch/page zoom preserved
+Still deliberately not called production-accurate because the source posters aren't architectural drawings.
+15. QR / “You Are Here” system
+I went ahead and implemented the prototype anchor architecture.
+Added stable anchors for:
+Main Entrance Ground Floor ├── West stairs ├── Center stairs └── East stairs Second Floor ├── West stairs ├── Center stairs └── East stairs Third Floor ├── West stairs ├── Center stairs └── East stairs
+They resolve through:
+/loc/[slug]
+For example:
+/loc/3f-west-stairs
+Then:
+QR ↓ location anchor ↓ canonical graph node ↓ /map?from=... ↓ routing
+I did not generate permanent QR stickers yet.
+That's intentional.
+The anchors are explicitly marked prototype/site-unverified until we physically walk the building.
+I also wrote:
+docs/QR_ANCHORS.md templates/location-anchors.csv
+covering how we verify and deploy them safely.
+16. Grade calculator became a real workspace
+This is now considerably beyond the original single calculator.
+Implemented:
+Multiple gradebooks
+MATH 38 MATH 101 STAT ...
+Weighted categories
+Long Exams 50% Quizzes 20% Exercises 15% Final 15%
+Raw score input
+42 / 50
+Calculation modes
+point-weighted within category
+equal assessment averaging
+Pending assessment handling
+Pending items do not silently become zero.
+What-if simulation
+LE3 Pending What if: 85 / 100
+without overwriting the real score.
+Target-grade solver
+Target: 85% Required remaining average: 90.4%
+including impossible-target detection.
+Custom transmutation
+Users enter the scale from their actual syllabus.
+IndexedDB
+Grade data stays in:
+browser
+not:
+Supabase
+Backup
+JSON export + restore.
+17. Academic import pipeline
+This is one of the biggest pieces implemented.
+The flow is now:
+CSV ↓ decode ↓ header mapping ↓ normalize ↓ resolve references ↓ validate ↓ stage ↓ issue review ↓ diff ↓ admin approval ↓ transactional apply ↓ verification queue ↓ publication
+Using a real CSV parser rather than split(','). The current csv-parse release continues to provide standards-capable parsing with no dependencies. ([npm](https://www.npmjs.com/package/csv-parse?utm_source=chatgpt.com))
+18. CSV safeguards
+Implemented:
+UTF-8 decoding
+2 MB limit
+5,000 row limit
+individual cell limit
+duplicate headers
+missing headers
+aliases/header mapping
+BOM handling
+quoted commas
+quoted fields
+escaped quotes
+CRLF/LF
+day normalization
+12/24-hour time handling
+room normalization
+course normalization
+explicit source-record keys
+content hashing
+preview hashing
+And cells are never treated as executable formulas/HTML.
+19. Faculty resolution is conservative
+This is important for real imports.
+Priority:
+official email ↓ exact normalized name ↓ manual resolution
+Unknown faculty becomes:
+facultyId = null WARNING
+Not:
+“I'll just create Dr. J. Santos.”
+TBA, STAFF, etc. can remain legitimately unresolved.
+20. Import idempotency
+Added normalized:
+source_records
+with stable identity based around:
+source term entity type source record key
+and:
+content_hash import_batch last applied
+That lets:
+same file
+be classified as:
+unchanged
+rather than duplicated.
+21. Transactional import apply
+Implemented:
+apply_import_batch(...)
+The browser does not perform a series of mutation calls.
+The database function:
+checks admin ↓ locks batch ↓ checks ready ↓ checks zero errors ↓ checks preview hash ↓ checks warnings acknowledged ↓ applies everything ↓ writes provenance ↓ marks batch applied ↓ COMMIT
+Failure anywhere rolls back the transaction.
+22. Imported data fails closed
+Another major rule:
+Importing new/changed schedule information never automatically makes it public.
+Instead:
+CSV applied ↓ needs_verification ↓ human editor ↓ verified ↓ admin ↓ published
+If a published schedule changes, the changed schedule is withdrawn until re-reviewed.
+That's exactly the behavior we want for institutional information.
+23. Schedule review queue
+Implemented a new:
+/admin/review
+workflow.
+Editors can:
+Verify Return for correction
+Admins can:
+Verify Return Publish Withdraw
+Publishing checks:
+section verified
+meetings verified
+course verified + published
+referenced room verified + published
+current academic term
+Every transition writes an audit event.
+24. Admin system
+Implemented:
+/admin /admin/imports /admin/imports/[batch] /admin/review /admin/sources /admin/terms
+Dashboard includes data-health indicators for:
+map
+data-source setup
+academic term
+import state
+review queue
+published data
+Data-source records and term setup no longer require manual Supabase-dashboard editing.
+25. Synthetic seed matrix
+Expanded supabase/seed.sql.
+Contains only explicitly synthetic data such as:
+DEMO 101 DEMO 201 Prof. Demo Alpha Prof. Demo Beta
+with:
+sections
+rooms
+offices
+consultations
+by-appointment example
+online example
+Math Clinic
+research
+resource
+calendar entry
+event
+prerequisites
+unpublished examples
+The project verifier explicitly rejects a fake seeded MATH 38.
+26. Spreadsheet templates
+Added ready-to-use templates for your eventual real data:
+templates/ ├── schedule-v1-template.csv ├── schedule-v1-example.csv ├── faculty-template.csv ├── consultations-template.csv ├── events-template.csv └── location-anchors.csv
+When you finally obtain classes, we now have a defined input contract.
+27. Offline/PWA boundary
+I rewrote the service-worker strategy.
+Cache-first
+Safe static content:
+app assets map assets brand assets routing assets
+Controlled public cached fallback
+Only specifically audited public shell pages.
+Never runtime-cache
+/admin /staff /auth admin API auth API RPC/actions non-GET
+Dynamic academic SSR remains network-owned until we design the dedicated sanitized public snapshot format.
+That prevents us from accidentally caching an authenticated admin response.
+28. Accessibility
+Implemented the early accessibility debt now rather than later:
+skip navigation
+stable main landmark
+aria-current
+semantic links
+focus-visible system
+keyboard SVG rooms
+textual map alternatives
+44px touch targets
+reduced motion
+no disabled browser zoom
+safe mobile bottom-nav inset
+explicit empty/error states
+source/freshness isn't conveyed through color only
+29. Testing architecture
+Added four testing layers.
+Unit
+Vitest for:
+grade math import normalization validation CSV behavior search ranking
+Database
+pgTAP tests covering:
+publication boundary
+RLS
+current-term uniqueness
+source/provenance architecture
+import RPC
+review/publication RPCs
+Browser
+Playwright journeys covering:
+navigation shell MB304 deep link search grade calculator academic empty state
+Dependency-free invariants
+scripts/verify-project.mjs scripts/verify-data.mjs
+30. CI
+I also added:
+.github/workflows/ci.yml .github/workflows/database-tests.yml
+The database workflow follows Supabase's documented GitHub Actions pattern of setting up the CLI and executing local database tests. ([Supabase](https://supabase.com/docs/guides/deployment/ci/testing?utm_source=chatgpt.com))
+And documented it in:
+docs/CI.md

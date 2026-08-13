@@ -1,0 +1,17 @@
+{
+  "name": "IMS Academic Hub",
+  "short_name": "IMS Hub",
+  "description": "Indoor navigation and academic companion for the UPLB Institute of Mathematical Sciences.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6fbff",
+  "theme_color": "#0077b8",
+  "icons": [
+    {
+      "src": "/brand/ims-mark.png",
+      "sizes": "245x272",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

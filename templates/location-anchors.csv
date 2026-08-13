@@ -1,0 +1,11 @@
+slug,node_id,label,status
+main-entrance,gf-main-entrance,Main Entrance,prototype
+ground-west-stairs,gf-west-stairs,West Stairs · Ground Floor,prototype
+ground-center-stairs,gf-center-stairs,Center Stairs · Ground Floor,prototype
+ground-east-stairs,gf-east-stairs,East Stairs · Ground Floor,prototype
+second-west-stairs,2f-west-stairs,West Stairs · Second Floor,prototype
+second-center-stairs,2f-center-stairs,Center Stairs · Second Floor,prototype
+second-east-stairs,2f-east-stairs,East Stairs · Second Floor,prototype
+third-west-stairs,3f-west-stairs,West Stairs · Third Floor,prototype
+third-center-stairs,3f-center-stairs,Center Stairs · Third Floor,prototype
+third-east-stairs,3f-east-stairs,East Stairs · Third Floor,prototype

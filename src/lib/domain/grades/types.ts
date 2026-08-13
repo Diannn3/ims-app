@@ -32,3 +32,18 @@ export interface GradebookResult {
   earnedWeightedPoints: number;
   performanceOnGradedWork: number | null;
 }
+
+export interface GradingScaleRow {
+  id: string;
+  minimumPercent: number;
+  label: string;
+}
+
+export interface GradebookDocument {
+  version: 1;
+  id: string;
+  name: string;
+  categories: GradeCategory[];
+  gradingScale: GradingScaleRow[];
+  updatedAt: string;
+}

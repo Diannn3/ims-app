@@ -1,21 +1,70 @@
 <script lang="ts">
-  import GradeCalculator from '$lib/components/grades/GradeCalculator.svelte';
+  import GradeWorkspace from '$lib/components/grades/GradeWorkspace.svelte';
 </script>
 
-<svelte:head><title>Grade Calculator · Math Building Hub</title></svelte:head>
+<svelte:head>
+  <title>Grade Calculator · IMS Academic Hub</title>
+  <meta
+    name="description"
+    content="Private local-first weighted grade calculator with what-if and target-grade tools."
+  />
+</svelte:head>
 
-<main class="page grade-page">
-  <section class="intro">
-    <span>ACADEMIC TOOLS</span>
-    <h1>Grade Calculator</h1>
-    <p>Prototype weighted-grade engine. Scores are currently kept only in page state; IndexedDB persistence is the next implementation step.</p>
+<div class="page page-stack grade-page">
+  <section class="page-heading">
+    <span class="eyebrow">Academic tools</span>
+    <h1>Grade calculator</h1>
+    <p>
+      Build your grading structure from the syllabus, enter raw scores, run what-if scenarios, and
+      calculate target averages. Your gradebooks stay in this browser by default.
+    </p>
   </section>
-  <GradeCalculator />
-</main>
+
+  <aside class="privacy-banner card card--green">
+    <div class="privacy-icon" aria-hidden="true">✓</div>
+    <div>
+      <strong>Local-first by design</strong>
+      <p>
+        Gradebook content is stored in IndexedDB on your device. It is intentionally excluded from
+        the institutional academic database, admin imports, and universal search.
+      </p>
+    </div>
+  </aside>
+
+  <GradeWorkspace />
+</div>
 
 <style>
-  .grade-page { display: grid; gap: 16px; }
-  .intro span { color: #9b6b00; font-size: 11px; font-weight: 900; letter-spacing: .14em; }
-  .intro h1 { color: var(--navy); font-size: clamp(34px,7vw,54px); margin: 5px 0 4px; letter-spacing: -.045em; }
-  .intro p { margin: 0; color: var(--muted); max-width: 700px; line-height: 1.5; }
+  .grade-page {
+    gap: 22px;
+  }
+
+  .privacy-banner {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .privacy-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: #fff;
+    color: var(--brand-green-deep);
+    font-weight: 900;
+  }
+
+  .privacy-banner strong {
+    color: var(--ink-strong);
+  }
+
+  .privacy-banner p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    line-height: 1.5;
+  }
 </style>

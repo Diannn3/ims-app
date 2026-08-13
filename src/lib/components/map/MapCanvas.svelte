@@ -1,46 +1,66 @@
 <script lang="ts">
   import building from '$lib/data/math-building/building.json';
-  import spacesData from '$lib/data/math-building/spaces.json';
   import graphData from '$lib/data/math-building/graph.json';
+  import { spaces } from '$lib/domain/navigation/spaces';
   import type { FloorId, GraphData } from '$lib/domain/navigation/types';
 
-  export let floor: FloorId;
-  export let selectedSpaceId: string | null = null;
-  export let routeNodeIds: string[] = [];
-  export let onSelect: (spaceId: string) => void = () => {};
+  let {
+    floor,
+    selectedSpaceId = null,
+    routeNodeIds = [],
+    onSelect = () => {}
+  }: {
+    floor: FloorId;
+    selectedSpaceId?: string | null;
+    routeNodeIds?: string[];
+    onSelect?: (spaceId: string) => void;
+  } = $props();
 
-  const spaces = spacesData as any[];
   const graph = graphData as GraphData;
-  $: floorSpaces = spaces.filter((space) => space.floor === floor);
-  $: nodeIndex = new Map(graph.nodes.map((node) => [node.id, node]));
-  $: routePoints = routeNodeIds
-    .map((id) => nodeIndex.get(id))
-    .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
-    .map((node) => `${node.x},${node.y}`)
-    .join(' ');
+  const nodeIndex = new Map(graph.nodes.map((node) => [node.id, node]));
 
-  const classFor = (kind: string) => `space ${kind}`;
-  const labelLines = (space: any) => {
+  const floorSpaces = $derived(spaces.filter((space) => space.floor === floor));
+  const routePoints = $derived(
+    routeNodeIds
+      .map((id) => nodeIndex.get(id))
+      .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
+      .map((node) => `${node.x},${node.y}`)
+      .join(' ')
+  );
+
+  function labelLines(space: (typeof spaces)[number]) {
     if (space.kind === 'stairs') return [space.name.replace(' Stairs', ''), 'Stairs'];
     if (space.kind === 'toilet') return [space.name.replace(' Toilet', ''), 'Toilet'];
     return space.subtitle ? [space.name, space.subtitle] : [space.name];
-  };
+  }
+
+  function onKeydown(event: KeyboardEvent, id: string) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect(id);
+    }
+  }
 </script>
 
 <div class="map-wrap">
-  <svg viewBox={`0 0 ${building.canvas.width} ${building.canvas.height}`} role="img" aria-label={`${floor} floor prototype map`}>
-    <rect class="canvas" width="1200" height="760" rx="24" />
+  <svg
+    viewBox={`0 0 ${building.canvas.width} ${building.canvas.height}`}
+    role="img"
+    aria-label={`${floor} floor schematic map`}
+  >
+    <rect class="canvas" width={building.canvas.width} height={building.canvas.height} rx="24" />
     <path class="hallway" d="M105 320 H1085 V445 H170 V420 H105 Z" />
 
     {#each floorSpaces as space}
       <g
+        class={`space ${space.kind}`}
         class:selected={space.id === selectedSpaceId}
-        class={classFor(space.kind)}
         role="button"
         tabindex="0"
         aria-label={`${space.name}${space.subtitle ? `, ${space.subtitle}` : ''}`}
-        on:click={() => onSelect(space.id)}
-        on:keydown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelect(space.id)}
+        aria-pressed={space.id === selectedSpaceId}
+        onclick={() => onSelect(space.id)}
+        onkeydown={(event) => onKeydown(event, space.id)}
       >
         <rect
           x={space.geometry.x}
@@ -67,36 +87,138 @@
     {/each}
 
     {#if routePoints}
-      <polyline class="route" points={routePoints} />
+      <polyline class="route" points={routePoints} aria-hidden="true" />
     {/if}
   </svg>
-  <div class="legend">
+
+  <div class="legend" aria-label="Map legend">
     <span><i class="room-dot"></i> Room / facility</span>
     <span><i class="route-dot"></i> Prototype route</span>
   </div>
 </div>
 
 <style>
-  .map-wrap { overflow: hidden; }
-  svg { width: 100%; min-height: 410px; display: block; touch-action: manipulation; }
-  .canvas { fill: #fbfaf6; stroke: #ded8cc; stroke-width: 2; }
-  .hallway { fill: #efe0a6; stroke: #c7aa56; stroke-width: 4; opacity: .92; }
-  .space { cursor: pointer; outline: none; }
-  .space rect { fill: #f9fbff; stroke: #172554; stroke-width: 5; transition: .16s ease; }
-  .space.lab rect, .space.service rect { fill: #e9effe; }
-  .space.toilet rect { fill: #f3efff; }
-  .space.stairs rect, .space.entrance rect { fill: #edf0f5; }
-  .space text { fill: #172554; font-weight: 800; font-size: 19px; pointer-events: none; }
-  .space.stairs text, .space.toilet text, .space.entrance text { font-size: 14px; }
-  .space text .sub { font-size: 14px; fill: #5d6472; }
-  .space:hover rect, .space:focus rect { fill: #fff7cf; stroke: #8f6800; }
-  .space.selected rect { fill: #172554; stroke: #d6ad3c; stroke-width: 7; }
-  .space.selected text, .space.selected text .sub { fill: #fff2b5; }
-  .route { fill: none; stroke: #c98d00; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 24; }
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 8px 4px 0; color: #6e7480; font-size: 12px; }
-  .legend span { display: inline-flex; gap: 7px; align-items: center; }
-  .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-  .room-dot { background: #172554; }
-  .route-dot { background: #c98d00; }
-  @media (max-width: 620px) { svg { min-height: 300px; } .space text { font-size: 23px; } }
+  .map-wrap {
+    width: 100%;
+    min-width: 680px;
+  }
+
+  svg {
+    width: 100%;
+    display: block;
+    touch-action: manipulation;
+  }
+
+  .canvas {
+    fill: #fafdff;
+    stroke: #cfe1ed;
+    stroke-width: 2;
+  }
+
+  .hallway {
+    fill: #fff7b9;
+    stroke: #d8bd33;
+    stroke-width: 4;
+    opacity: 0.92;
+  }
+
+  .space {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .space rect {
+    fill: #f9fcff;
+    stroke: #176c9d;
+    stroke-width: 5;
+    transition: fill 150ms ease, stroke 150ms ease, stroke-width 150ms ease;
+  }
+
+  .space.lab rect,
+  .space.service rect {
+    fill: #e9f7ff;
+  }
+
+  .space.toilet rect {
+    fill: #f4f7fb;
+  }
+
+  .space.stairs rect,
+  .space.entrance rect {
+    fill: #edf3f7;
+  }
+
+  .space text {
+    fill: #0c3d5a;
+    font-weight: 850;
+    font-size: 19px;
+    pointer-events: none;
+  }
+
+  .space.stairs text,
+  .space.toilet text,
+  .space.entrance text {
+    font-size: 14px;
+  }
+
+  .space text .sub {
+    font-size: 14px;
+    fill: #607587;
+  }
+
+  .space:hover rect,
+  .space:focus-visible rect {
+    fill: #fffde3;
+    stroke: #7a6200;
+    stroke-width: 7;
+  }
+
+  .space:focus-visible {
+    outline: none;
+  }
+
+  .space.selected rect {
+    fill: #006ea8;
+    stroke: #faf807;
+    stroke-width: 8;
+  }
+
+  .space.selected text,
+  .space.selected text .sub {
+    fill: #fff;
+  }
+
+  .route {
+    fill: none;
+    stroke: #d5ad00;
+    stroke-width: 13;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1 24;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 4px 2px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .legend span {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .legend i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .room-dot { background: var(--brand-blue-deep); }
+  .route-dot { background: #d5ad00; }
 </style>
