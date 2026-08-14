@@ -3,7 +3,8 @@ import { spaces } from '$lib/domain/navigation/spaces';
 
 const roomAliasMap = new Map<string, string>();
 for (const space of spaces) {
-  const values = [space.id, space.name, ...(space.aliases ?? [])];
+  const bareRoomNumber = /^mb(\d+)$/i.exec(space.id)?.[1];
+  const values = [space.id, space.name, ...(space.aliases ?? []), ...(bareRoomNumber ? [bareRoomNumber] : [])];
   for (const value of values) {
     roomAliasMap.set(normalizeCompact(value), space.id);
   }

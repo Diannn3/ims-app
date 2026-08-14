@@ -154,7 +154,7 @@ export function resolveScheduleRow(
   context: ImportValidationContext
 ): { resolved: ResolvedScheduleRowV1; issues: ImportIssue[] } {
   const issues: ImportIssue[] = [];
-  const course = context.coursesByCode.get(canonical.courseCode);
+  const course = context.coursesByCode.get(canonical.courseCode.toLowerCase());
   let facultyId: string | null = null;
 
   if (!course) {

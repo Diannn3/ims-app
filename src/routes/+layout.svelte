@@ -1,63 +1,36 @@
 <script lang="ts">
   import '../app.css';
+  import { onNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import NavIcon from '$lib/components/ui/NavIcon.svelte';
+  import { onMount } from 'svelte';
+  import AppHeader from '$lib/components/shell/AppHeader.svelte';
+  import BottomNavigation from '$lib/components/shell/BottomNavigation.svelte';
 
   let { children } = $props();
 
-  const navItems = [
-    { href: '/', label: 'Home', icon: 'home' as const },
-    { href: '/map', label: 'Map', icon: 'map' as const },
-    { href: '/academics', label: 'Academics', icon: 'academics' as const },
-    { href: '/people', label: 'People', icon: 'people' as const },
-    { href: '/tools/grades', label: 'Tools', icon: 'tools' as const }
-  ];
+  onMount(() => {
+    document.documentElement.dataset.hydrated = 'true';
+    return () => delete document.documentElement.dataset.hydrated;
+  });
 
-  function active(href: string) {
-    const path = page.url.pathname;
-    if (href === '/') return path === '/';
-    if (href === '/academics') return path.startsWith('/academics') || path.startsWith('/course');
-    if (href === '/people') return path.startsWith('/people') || path.startsWith('/faculty') || path.startsWith('/consultations');
-    return path.startsWith(href);
-  }
+  onNavigate((navigation) => {
+    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    return new Promise<void>((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 </script>
 
-<a class="skip-link" href="#main-content">Skip to main content</a>
+<a class="fixed -left-[9999px] top-3 z-[100] rounded-lg bg-ink px-4 py-3 font-bold text-white shadow-xl focus:left-3" href="#main-content">Skip to main content</a>
 
-<div class="app-shell">
-  <header class="site-header">
-    <div class="site-header__inner">
-      <a class="brand-lockup" href="/" aria-label="IMS Academic Hub home">
-        <img class="brand-mark" src="/brand/ims-mark.png" alt="" width="38" height="38" />
-        <span class="brand-copy">
-          <strong>IMS Academic Hub</strong>
-          <span>Math Building · UPLB</span>
-        </span>
-      </a>
-
-      <nav class="desktop-nav" aria-label="Primary">
-        {#each navItems as item}
-          <a href={item.href} aria-current={active(item.href) ? 'page' : undefined}>{item.label}</a>
-        {/each}
-      </nav>
-
-      <span class="header-status" title="Academic data is still in development">
-        <span class="status-dot" aria-hidden="true"></span>
-        Build phase
-      </span>
-    </div>
-  </header>
-
-  <main id="main-content" tabindex="-1">
-    {@render children()}
-  </main>
-
-  <nav class="mobile-nav" aria-label="Primary">
-    {#each navItems as item}
-      <a href={item.href} aria-current={active(item.href) ? 'page' : undefined}>
-        <NavIcon name={item.icon} />
-        <span>{item.label}</span>
-      </a>
-    {/each}
-  </nav>
+<div data-app-shell class={`min-h-screen bg-canvas text-ink ${page.url.pathname.startsWith('/admin') || page.url.pathname.startsWith('/staff') ? '' : 'pb-[calc(6rem+env(safe-area-inset-bottom))] min-[940px]:pb-0'}`}>
+  <AppHeader pathname={page.url.pathname} />
+  <main id="main-content" class="min-h-[65svh]" tabindex="-1">{@render children()}</main>
+  {#if !page.url.pathname.startsWith('/admin') && !page.url.pathname.startsWith('/staff')}
+    <BottomNavigation pathname={page.url.pathname} />
+  {/if}
 </div>

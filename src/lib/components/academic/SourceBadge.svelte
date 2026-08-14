@@ -18,36 +18,17 @@
   );
 </script>
 
-<div class="source-row">
+<div class="flex flex-wrap items-center gap-2 text-xs">
   {#if label}
     {#if url}
-      <a class="badge badge--blue" href={url} target="_blank" rel="noopener noreferrer">Source: {label}</a>
+      <a class="inline-flex min-h-7 items-center border border-sky-200 bg-sky-50 px-2 font-bold text-ims-blue-ink no-underline hover:border-ims-blue/40" href={url} target="_blank" rel="noopener noreferrer">Source: {label}</a>
     {:else}
-      <span class="badge badge--blue">Source: {label}</span>
+      <span class="inline-flex min-h-7 items-center border border-sky-200 bg-sky-50 px-2 font-bold text-ims-blue-ink">Source: {label}</span>
     {/if}
   {:else}
-    <span class="badge">Source pending</span>
+    <span class="inline-flex min-h-7 items-center border border-line bg-slate-50 px-2 font-bold text-muted">Source pending</span>
   {/if}
   {#if formatted}
-    <span class="freshness">{freshnessLabel} {formatted}</span>
+    <span class="font-semibold text-muted">{freshnessLabel} {formatted}</span>
   {/if}
 </div>
-
-<style>
-  .source-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-
-  a.badge {
-    text-decoration: none;
-  }
-
-  .freshness {
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 720;
-  }
-</style>

@@ -2,195 +2,31 @@
   import CourseCard from '$lib/components/academic/CourseCard.svelte';
   import AcademicEmptyState from '$lib/components/academic/AcademicEmptyState.svelte';
   import AcademicErrorState from '$lib/components/academic/AcademicErrorState.svelte';
+  import AppIcon from '$lib/components/ui/AppIcon.svelte';
+  import PageHeader from '$lib/components/shell/PageHeader.svelte';
+  import type { IconName } from '$lib/ui/design-system';
   let { data } = $props();
+  const destinations: { href: string; icon: IconName; title: string; description: string }[] = [
+    { href: '/consultations', icon: 'calendar', title: 'Consultations', description: 'Scheduled faculty hours' },
+    { href: '/services/math-clinic', icon: 'building', title: 'Math Clinic', description: 'MB 209 & service details' },
+    { href: '/people', icon: 'people', title: 'Faculty', description: 'Offices, teaching & research' },
+    { href: '/research', icon: 'research', title: 'Research', description: 'Published areas & faculty' },
+    { href: '/academics/forms', icon: 'document', title: 'Forms & links', description: 'Official academic resources' },
+    { href: '/academics/calendar', icon: 'calendar', title: 'Academic dates', description: 'Source-tracked deadlines' },
+    { href: '/academics/help', icon: 'info', title: 'Who do I ask?', description: 'Find the right person or service' },
+    { href: '/events', icon: 'calendar', title: 'Events', description: 'Seminars & building activities' }
+  ];
 </script>
 
-<svelte:head>
-  <title>Academics · IMS Academic Hub</title>
-  <meta name="description" content="Browse published IMS courses and academic information." />
-</svelte:head>
+<svelte:head><title>Academics · IMS Academic Hub</title><meta name="description" content="Browse published IMS courses and academic information." /></svelte:head>
 
-<div class="page page-stack academics-page">
-  <section class="page-heading">
-    <span class="eyebrow">Academic knowledge</span>
-    <h1>Courses and academic information.</h1>
-    <p>
-      Published records are source-tracked and term-aware. Unverified class or faculty information
-      never appears as if it were official.
-    </p>
-  </section>
+<div class="mx-auto grid w-full max-w-[1180px] gap-8 px-4 py-7 sm:px-6 sm:py-9">
+  <PageHeader eyebrow="Academic knowledge" title="Courses & academic information." description="Published records are source-tracked and term-aware. Draft information never appears as official." />
+  <form class="grid gap-2 border border-line-strong bg-white p-2 shadow-sm sm:grid-cols-[1fr_auto]" method="GET" role="search"><label><span class="sr-only">Search courses</span><input class="min-h-14 w-full border-0 bg-transparent px-3 font-mono text-base outline-none placeholder:font-sans placeholder:text-slate-400" type="search" name="q" value={data.query} placeholder="Try MATH 38 or a course title…" autocomplete="off" /></label><button class="min-h-12 bg-ims-blue-deep px-6 font-extrabold text-white hover:bg-ims-blue-ink focus-visible:ring-3 focus-visible:ring-ims-blue/30 sm:min-h-14" type="submit">Search Courses</button></form>
 
-  <form class="course-search card" method="GET" role="search">
-    <label class="field">
-      <span>Search courses</span>
-      <div class="search-row">
-        <input class="input" type="search" name="q" value={data.query} placeholder="Try “MATH 38” or a course title" />
-        <button class="button button--primary" type="submit">Search</button>
-      </div>
-    </label>
-  </form>
+  <section class="grid gap-3" aria-labelledby="academic-nav-title"><header class="border-b border-line pb-3"><p class="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-ims-blue-ink">Index</p><h2 class="mt-1 text-2xl font-semibold tracking-tight" id="academic-nav-title">Academic hub</h2></header><nav class="grid border-y border-line bg-white sm:grid-cols-2 lg:grid-cols-4" aria-label="Academic resources">{#each destinations as item}<a class="group grid min-h-28 grid-cols-[2.75rem_1fr] content-center gap-3 border-b border-line p-4 no-underline transition-colors hover:bg-sky-50/60 focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ims-blue/30 sm:border-r lg:[&:nth-child(4n)]:border-r-0" href={item.href}><span class="grid size-11 place-items-center bg-slate-50 text-ims-blue-ink"><AppIcon name={item.icon} /></span><span class="min-w-0"><strong class="block text-ink-strong">{item.title}</strong><small class="mt-1 block leading-snug text-muted">{item.description}</small></span></a>{/each}</nav></section>
 
-  <section class="academic-nav" aria-labelledby="academic-nav-title">
-    <div class="section-header">
-      <div>
-        <span class="kicker">Explore</span>
-        <h2 id="academic-nav-title">Academic hub</h2>
-      </div>
-    </div>
-
-    <div class="academic-nav-grid">
-      <a class="card nav-tile" href="/consultations">
-        <span class="badge badge--green">People</span>
-        <strong>Consultations</strong>
-        <small>Find scheduled consultation hours once verified.</small>
-      </a>
-      <a class="card nav-tile" href="/services/math-clinic">
-        <span class="badge badge--yellow">Service</span>
-        <strong>Math Clinic</strong>
-        <small>Open the MB 209 location and official service information.</small>
-      </a>
-      <a class="card nav-tile" href="/people">
-        <span class="badge badge--blue">Directory</span>
-        <strong>Faculty</strong>
-        <small>Browse faculty offices, teaching, and research metadata.</small>
-      </a>
-      <a class="card nav-tile" href="/research">
-        <span class="badge badge--green">Research</span>
-        <strong>Research explorer</strong>
-        <small>Browse published research areas and related faculty.</small>
-      </a>
-      <a class="card nav-tile" href="/academics/forms">
-        <span class="badge">Resources</span>
-        <strong>Forms & links</strong>
-        <small>Open source-tracked official academic resources.</small>
-      </a>
-      <a class="card nav-tile" href="/academics/calendar">
-        <span class="badge badge--yellow">Calendar</span>
-        <strong>Academic dates</strong>
-        <small>See published dates with their authoritative source attached.</small>
-      </a>
-      <a class="card nav-tile" href="/academics/help">
-        <span class="badge badge--blue">Guide</span>
-        <strong>Who do I ask?</strong>
-        <small>Start with your concern and find the appropriate people or service.</small>
-      </a>
-      <a class="card nav-tile" href="/events">
-        <span class="badge badge--yellow">Events</span>
-        <strong>Academic events</strong>
-        <small>Connect seminars and activities directly to their building spaces.</small>
-      </a>
-      <a class="card nav-tile" href="/search">
-        <span class="badge">Universal</span>
-        <strong>Search everything</strong>
-        <small>Rooms, courses, faculty, and services in one place.</small>
-      </a>
-    </div>
-  </section>
-
-  <section class="course-section" aria-labelledby="course-list-title">
-    <div class="section-header">
-      <div>
-        <span class="kicker">Published data</span>
-        <h2 id="course-list-title">{data.query ? `Results for “${data.query}”` : 'Courses'}</h2>
-      </div>
-      {#if data.courses.length}
-        <span class="badge">{data.courses.length} result{data.courses.length === 1 ? '' : 's'}</span>
-      {/if}
-    </div>
-
-    {#if !data.repositoryStatus.configured}
-      <AcademicEmptyState
-        title="Academic data is not connected yet"
-        message="The public academic repository has not been configured in this deployment. The map and grade tools remain available."
-        actionHref="/map"
-        actionLabel="Use the building map"
-      />
-    {:else if !data.repositoryStatus.available}
-      <AcademicErrorState message={data.repositoryStatus.message} />
-    {:else if data.courses.length === 0}
-      <AcademicEmptyState
-        title={data.query ? 'No published course matched that search' : 'No published courses yet'}
-        message="Production intentionally shows no academic claims until verified course records are published."
-      />
-    {:else}
-      <div class="course-list">
-        {#each data.courses as course}
-          <CourseCard {course} />
-        {/each}
-      </div>
-    {/if}
+  <section class="grid gap-4" aria-labelledby="course-list-title"><header class="flex items-end justify-between gap-3 border-b border-line pb-3"><div><p class="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-ims-blue-ink">Published data</p><h2 class="mt-1 text-2xl font-semibold tracking-tight" id="course-list-title">{data.query ? `Results for “${data.query}”` : 'Courses'}</h2></div>{#if data.courses.length}<span class="font-mono text-xs font-semibold text-muted">{data.courses.length} result{data.courses.length === 1 ? '' : 's'}</span>{/if}</header>
+    {#if !data.repositoryStatus.configured}<AcademicEmptyState title="Academic data is not connected yet" message="The public repository has not been configured. Building maps and local grade tools remain available." actionHref="/map" actionLabel="Use the Building Map" />{:else if !data.repositoryStatus.available}<AcademicErrorState message={data.repositoryStatus.message} />{:else if data.courses.length === 0}<AcademicEmptyState title={data.query ? 'No published course matched that search' : 'No published courses yet'} message="Production shows no academic claims until verified course records are published." />{:else}<div class="divide-y divide-line border-y border-line bg-white lg:grid lg:grid-cols-2 lg:divide-x">{#each data.courses as course}<CourseCard {course} />{/each}</div>{/if}
   </section>
 </div>
-
-<style>
-  .academics-page {
-    gap: 28px;
-  }
-
-  .course-search {
-    padding: 14px;
-  }
-
-  .search-row {
-    display: grid;
-    gap: 8px;
-  }
-
-  .academic-nav,
-  .course-section {
-    display: grid;
-    gap: 14px;
-  }
-
-  .academic-nav-grid,
-  .course-list {
-    display: grid;
-    gap: 10px;
-  }
-
-  .nav-tile {
-    min-height: 150px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 9px;
-    text-decoration: none;
-  }
-
-  .nav-tile:hover {
-    border-color: #a9c8dc;
-    box-shadow: var(--shadow-md);
-  }
-
-  .nav-tile strong {
-    margin-top: auto;
-    color: var(--ink-strong);
-    font-size: 1.12rem;
-  }
-
-  .nav-tile small {
-    color: var(--muted);
-    line-height: 1.45;
-  }
-
-  @media (min-width: 640px) {
-    .search-row {
-      grid-template-columns: 1fr auto;
-    }
-
-    .academic-nav-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 960px) {
-    .academic-nav-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
-    .course-list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-</style>

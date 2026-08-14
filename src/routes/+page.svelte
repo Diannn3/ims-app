@@ -1,523 +1,93 @@
 <script lang="ts">
-  import NavIcon from '$lib/components/ui/NavIcon.svelte';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { fade, fly } from 'svelte/transition';
+  import AppIcon from '$lib/components/ui/AppIcon.svelte';
+  import StatusChip from '$lib/components/ui/StatusChip.svelte';
+  import type { IconName } from '$lib/ui/design-system';
 
-  const quickActions = [
-    {
-      href: '/map',
-      title: 'Find a room',
-      copy: 'Search the Math Building and open the right floor instantly.',
-      icon: 'map' as const,
-      tone: 'blue'
-    },
-    {
-      href: '/consultations',
-      title: 'Consultations',
-      copy: 'Faculty consultation schedules will appear here once verified.',
-      icon: 'calendar' as const,
-      tone: 'green'
-    },
-    {
-      href: '/services/math-clinic',
-      title: 'Math Clinic',
-      copy: 'Locate MB 209 and open verified academic-help information.',
-      icon: 'people' as const,
-      tone: 'yellow'
-    },
-    {
-      href: '/tools/grades',
-      title: 'Grade calculator',
-      copy: 'Compute weighted standing without uploading your scores.',
-      icon: 'tools' as const,
-      tone: 'blue'
-    }
+  const wayfinding: Array<{ href: string; title: string; copy: string }> = [
+    { href: '/map', title: 'Building map', copy: 'Rooms and routes' },
+    { href: '/academics', title: 'Academics', copy: 'Courses and schedules' },
+    { href: '/people', title: 'People', copy: 'Faculty and consultations' }
   ];
+
+  const tasks: Array<{ href: string; title: string; copy: string; detail: string; icon: IconName }> = [
+    { href: '/map', title: 'Find a room', copy: 'Open the floor map and route from a building anchor.', detail: '3 floors', icon: 'map' },
+    { href: '/academics', title: 'Browse academics', copy: 'Find published courses, sections, and room schedules.', detail: 'Verified only', icon: 'academics' },
+    { href: '/consultations', title: 'Check consultations', copy: 'See faculty availability when a schedule is published.', detail: 'By faculty', icon: 'calendar' },
+    { href: '/tools/grades', title: 'Plan your grades', copy: 'Model scores locally without uploading student data.', detail: 'On-device', icon: 'tools' }
+  ];
+
+  const motionDuration = $derived(prefersReducedMotion.current ? 0 : 240);
 </script>
 
 <svelte:head>
   <title>IMS Academic Hub · UPLB Math Building</title>
-  <meta
-    name="description"
-    content="Indoor navigation, academic information, faculty consultations, and private student tools for the UPLB Institute of Mathematical Sciences."
-  />
+  <meta name="description" content="Indoor navigation, verified academic information, faculty consultations, and private student tools for the UPLB Institute of Mathematical Sciences." />
 </svelte:head>
 
-<div class="page home-page">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <span class="hero-kicker">UPLB · Institute of Mathematical Sciences</span>
-      <h1 id="hero-title">The Math Building, made easier to navigate.</h1>
-      <p>
-        Find rooms, understand where academic services are, and eventually connect courses,
-        faculty, consultation hours, and verified resources to the places where they happen.
+<div class="mx-auto grid w-full max-w-[1180px] gap-16 px-4 pb-20 sm:px-6 lg:gap-24">
+  <section class="grid min-h-[min(620px,calc(100svh-92px))] items-center gap-10 border-b border-line py-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)] lg:py-24" aria-labelledby="hero-title">
+    <div class="grid max-w-3xl justify-items-start gap-5" in:fly={{ y: prefersReducedMotion.current ? 0 : 18, duration: motionDuration }}>
+      <p class="m-0 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-ims-blue-ink">
+        <span class="h-0.5 w-4 rounded-full bg-ims-green" aria-hidden="true"></span>
+        UPLB · Institute of Mathematical Sciences
       </p>
+      <h1 id="hero-title" class="m-0 max-w-[13ch] text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-ink-strong sm:text-6xl lg:text-7xl">Where do you need to go?</h1>
+      <p class="m-0 max-w-[62ch] text-lg leading-relaxed text-muted">Find a room, course, faculty member, consultation schedule, or student tool from one verified academic hub.</p>
 
-      <form class="hero-search" method="GET" action="/search" role="search">
-        <label class="visually-hidden" for="home-search">Search the IMS Academic Hub</label>
-        <NavIcon name="search" />
-        <input
-          id="home-search"
-          name="q"
-          type="search"
-          placeholder="Try “MB 304”, “Math Clinic”, or a course code"
-          autocomplete="off"
-          enterkeyhint="search"
-        />
-        <button type="submit">Search</button>
+      <form class="mt-2 grid w-full max-w-3xl gap-2" method="GET" action="/search" role="search">
+        <label class="text-sm font-bold text-muted-strong" for="home-search">Search the Math Building and academic hub</label>
+        <div class="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-white/80 bg-white/80 p-1.5 pl-4 shadow-[0_18px_52px_rgb(4_40_67/0.1)] backdrop-blur-xl transition-[border-color,box-shadow,background-color] duration-200 ease-out focus-within:border-ims-blue/50 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgb(0_155_255/0.15),0_18px_52px_rgb(4_40_67/0.1)]">
+          <span class="text-ims-blue-ink"><AppIcon name="search" size={22} /></span>
+          <input class="h-12 min-w-0 border-0 bg-transparent text-base text-ink-strong outline-none placeholder:text-slate-500" id="home-search" name="q" type="search" placeholder="Try “MB 304”, “Math Clinic”, or a course code…" autocomplete="off" enterkeyhint="search" />
+          <button class="min-h-12 rounded-xl bg-ink-strong px-4 font-extrabold text-white shadow-sm transition-[background-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-ims-blue-ink hover:shadow-md active:translate-y-0 focus-visible:ring-3 focus-visible:ring-ims-blue/30 sm:px-5" type="submit">Search</button>
+        </div>
       </form>
+    </div>
 
-      <div class="hero-actions">
-        <a class="button button--primary" href="/map">
-          <NavIcon name="route" />
-          Explore the building
+    <aside class="overflow-hidden rounded-2xl border border-white/80 border-t-4 border-t-ims-blue-ink bg-white/80 shadow-[0_18px_52px_rgb(4_40_67/0.11)] backdrop-blur-xl" aria-label="Building wayfinding shortcuts" in:fade={{ duration: motionDuration }}>
+      <div class="flex min-h-14 items-center justify-between gap-4 bg-ink-strong px-4 text-xs font-bold text-white"><span class="font-mono">IMS / MB</span><span>Academic Hub</span></div>
+      {#each wayfinding as item}
+        <a class="group grid min-h-[76px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-4 py-3 text-ink no-underline transition-[background-color,color,padding] duration-200 ease-out last:border-b-0 hover:bg-sky-50/80 hover:px-5 hover:text-ims-blue-ink focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ims-blue/30" href={item.href}>
+          <span class="grid min-w-0 gap-0.5"><strong class="text-base">{item.title}</strong><small class="text-sm text-muted">{item.copy}</small></span>
+          <span class="transition-transform duration-200 ease-out group-hover:translate-x-0.5"><AppIcon name="next" /></span>
         </a>
-        <a class="button button--secondary" href="/academics">Browse academics</a>
-      </div>
-    </div>
-
-    <div class="hero-visual" aria-label="Project status">
-      <div class="brand-orbit card">
-        <div class="logo-stage">
-          <img src="/brand/ims-mark.png" alt="IMS logo" width="132" height="132" />
-        </div>
-        <div class="status-panel">
-          <span class="badge badge--yellow">Data-ready build</span>
-          <strong>Navigation works with structured map data.</strong>
-          <p>Academic records remain unpublished until a verified source is connected.</p>
-        </div>
-        <div class="orbit-dot orbit-blue"></div>
-        <div class="orbit-dot orbit-green"></div>
-        <div class="orbit-dot orbit-yellow"></div>
-      </div>
-    </div>
+      {/each}
+    </aside>
   </section>
 
-  <section class="quick-section" aria-labelledby="quick-title">
-    <div class="section-header">
+  <section class="grid gap-4" aria-labelledby="task-title" in:fly={{ y: prefersReducedMotion.current ? 0 : 14, duration: motionDuration, delay: prefersReducedMotion.current ? 0 : 60 }}>
+    <div class="flex items-end justify-between gap-4">
       <div>
-        <span class="eyebrow">Quick actions</span>
-        <h2 id="quick-title">Start with what you need.</h2>
+        <p class="m-0 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-ims-blue-ink"><span class="h-0.5 w-4 rounded-full bg-ims-green" aria-hidden="true"></span>Student shortcuts</p>
+        <h2 id="task-title" class="mt-1 mb-0 text-3xl font-semibold tracking-[-0.04em] text-ink-strong">Start with the task.</h2>
       </div>
-      <a class="button button--quiet" href="/search">Search everything →</a>
+      <a class="inline-flex min-h-12 items-center gap-1 font-extrabold text-ims-blue-ink no-underline transition-[color,transform] duration-200 hover:translate-x-0.5 hover:text-ink-strong" href="/search">Search everything <AppIcon name="next" size={16} /></a>
     </div>
 
-    <div class="quick-grid">
-      {#each quickActions as action}
-        <a class:blue={action.tone === 'blue'} class:green={action.tone === 'green'} class:yellow={action.tone === 'yellow'} class="quick-card card" href={action.href}>
-          <span class="quick-icon"><NavIcon name={action.icon} /></span>
-          <span>
-            <strong>{action.title}</strong>
-            <small>{action.copy}</small>
-          </span>
-          <span class="arrow" aria-hidden="true">↗</span>
+    <div class="grid border-y border-line-strong">
+      {#each tasks as task}
+        <a class="group grid min-h-[88px] grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-1 py-3 text-ink no-underline transition-[background-color,padding] duration-200 ease-out last:border-b-0 hover:bg-white/70 hover:px-3 focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ims-blue/30 sm:grid-cols-[3rem_minmax(0,1fr)_auto_auto]" href={task.href}>
+          <span class="grid size-11 place-items-center rounded-xl border border-line bg-white/90 text-ims-blue-ink shadow-sm transition-[border-color,box-shadow,transform] duration-200 group-hover:-translate-y-0.5 group-hover:border-ims-blue/30 group-hover:shadow-md"><AppIcon name={task.icon} size={22} /></span>
+          <span class="grid min-w-0 gap-0.5"><strong class="text-base text-ink-strong">{task.title}</strong><small class="leading-snug text-muted">{task.copy}</small></span>
+          <span class="hidden font-mono text-[0.68rem] uppercase tracking-[0.04em] text-muted sm:inline">{task.detail}</span>
+          <span class="transition-transform duration-200 group-hover:translate-x-0.5"><AppIcon name="next" size={18} /></span>
         </a>
       {/each}
     </div>
   </section>
 
-  <section class="capability-grid" aria-label="Project capabilities">
-    <article class="capability card card--blue">
-      <span class="kicker">Navigation engine</span>
-      <h2>Three floors, one connected route graph.</h2>
-      <p>
-        Semantic room geometry and client-side A* routing stay separate, so the map can improve
-        visually without breaking route data.
-      </p>
-      <a href="/map">Open indoor explorer →</a>
-    </article>
-
-    <article class="capability card card--green">
-      <span class="kicker">Academic knowledge</span>
-      <h2>Built to connect courses, people, rooms, and consultations.</h2>
-      <p>
-        Production academic pages fail closed: if verified data does not exist yet, the app says
-        so instead of inventing a schedule.
-      </p>
-      <a href="/academics">See academic hub →</a>
-    </article>
-
-    <article class="capability card card--yellow">
-      <span class="kicker">Private tools</span>
-      <h2>Your grade calculator stays on your device.</h2>
-      <p>
-        Student-entered scores are intentionally separate from the institutional database and are
-        never required for building navigation.
-      </p>
-      <a href="/tools/grades">Open calculator →</a>
-    </article>
-  </section>
-
-  <aside class="verification-note card" aria-label="Map verification notice">
-    <div class="verification-symbol" aria-hidden="true">!</div>
-    <div>
-      <strong>Physical verification is still required before public wayfinding.</strong>
-      <p>
-        The current floor geometry was reconstructed from orientation posters. Doors, stairs,
-        corridors, and accessibility details must be checked in the actual building before the
-        routing system is treated as production navigation.
-      </p>
+  <section class="grid gap-8 rounded-2xl border border-white/80 border-l-4 border-l-ims-yellow bg-white/80 p-6 shadow-sm backdrop-blur-xl lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:p-8" aria-labelledby="trust-title" in:fade={{ duration: motionDuration }}>
+    <div class="grid content-start justify-items-start gap-3">
+      <StatusChip tone="warning" label="Publication gate active" />
+      <h2 id="trust-title" class="m-0 max-w-[24ch] text-2xl font-semibold tracking-[-0.035em] text-ink-strong sm:text-3xl">Academic records appear only after verification.</h2>
+      <p class="m-0 max-w-[65ch] leading-relaxed text-muted">Rooms and navigation geometry stay separate from changing course and faculty schedules. Missing data is shown as missing—never guessed.</p>
     </div>
-  </aside>
+    <div class="grid gap-4" aria-label="Data principles">
+      <div class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2.5 text-ims-blue-ink"><AppIcon name="shield" /><span class="grid gap-0.5 text-ink"><strong>Source-aware</strong><small class="leading-snug text-muted">Every published record retains provenance.</small></span></div>
+      <div class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2.5 text-ims-blue-ink"><AppIcon name="tools" /><span class="grid gap-0.5 text-ink"><strong>Private by default</strong><small class="leading-snug text-muted">Gradebooks stay in this browser.</small></span></div>
+      <div class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2.5 text-ims-blue-ink"><AppIcon name="route" /><span class="grid gap-0.5 text-ink"><strong>Site verification pending</strong><small class="leading-snug text-muted">Use the current map as a structured prototype.</small></span></div>
+    </div>
+  </section>
 </div>
-
-<style>
-  .home-page {
-    display: grid;
-    gap: 36px;
-  }
-
-  .hero {
-    min-height: min(690px, calc(100svh - 100px));
-    padding: clamp(20px, 5vw, 64px) 0 22px;
-    display: grid;
-    align-items: center;
-    gap: 38px;
-  }
-
-  .hero-copy {
-    max-width: 760px;
-    display: grid;
-    justify-items: start;
-    gap: 16px;
-  }
-
-  .hero h1 {
-    max-width: 880px;
-    font-size: clamp(3rem, 10vw, 6.7rem);
-    line-height: 0.88;
-  }
-
-  .hero p {
-    font-size: clamp(1rem, 2.2vw, 1.18rem);
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .hero-actions :global(svg) {
-    width: 18px;
-    height: 18px;
-  }
-
-  .hero-search {
-    width: min(680px, 100%);
-    min-height: 58px;
-    padding: 6px 6px 6px 16px;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 9px;
-    border: 1px solid var(--line-strong);
-    border-radius: 19px;
-    background: rgb(255 255 255 / 0.95);
-    box-shadow: 0 18px 52px rgb(0 72 118 / 0.09);
-  }
-
-  .hero-search:focus-within {
-    border-color: var(--brand-blue-deep);
-    box-shadow: var(--focus-ring), 0 18px 52px rgb(0 72 118 / 0.09);
-  }
-
-  .hero-search :global(svg) {
-    width: 21px;
-    height: 21px;
-    color: var(--brand-blue-ink);
-  }
-
-  .hero-search input {
-    min-width: 0;
-    height: 44px;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--ink-strong);
-  }
-
-  .hero-search input::placeholder {
-    color: #7b8b9d;
-  }
-
-  .hero-search button {
-    min-height: 44px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 14px;
-    background: var(--ink-strong);
-    color: #fff;
-    font-weight: 820;
-  }
-
-  .hero-visual {
-    display: none;
-  }
-
-  .brand-orbit {
-    position: relative;
-    min-height: 410px;
-    padding: 30px;
-    overflow: hidden;
-    display: grid;
-    align-content: center;
-    justify-items: center;
-    background:
-      radial-gradient(circle at 50% 35%, rgb(0 155 255 / 0.2), transparent 12rem),
-      linear-gradient(145deg, #ffffff, #eef8ff);
-  }
-
-  .brand-orbit::before,
-  .brand-orbit::after {
-    content: "";
-    position: absolute;
-    inset: 44px;
-    border: 1px solid rgb(0 119 184 / 0.13);
-    border-radius: 50%;
-    rotate: -12deg;
-  }
-
-  .brand-orbit::after {
-    inset: 80px 22px;
-    rotate: 42deg;
-    border-color: rgb(23 150 14 / 0.12);
-  }
-
-  .logo-stage {
-    z-index: 2;
-    width: 170px;
-    aspect-ratio: 1;
-    display: grid;
-    place-items: center;
-    border-radius: 42px;
-    background: #fff;
-    box-shadow: 0 24px 70px rgb(0 91 145 / 0.18);
-  }
-
-  .logo-stage img {
-    width: 132px;
-    height: 132px;
-    object-fit: contain;
-    background: var(--brand-blue);
-    border-radius: 22px;
-  }
-
-  .status-panel {
-    z-index: 2;
-    width: min(330px, 100%);
-    margin-top: 28px;
-    display: grid;
-    justify-items: center;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .status-panel strong {
-    color: var(--ink-strong);
-    font-size: 1.05rem;
-  }
-
-  .status-panel p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.86rem;
-    line-height: 1.5;
-  }
-
-  .orbit-dot {
-    position: absolute;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    box-shadow: 0 0 0 8px rgb(255 255 255 / 0.7);
-  }
-
-  .orbit-blue { top: 74px; right: 52px; background: var(--brand-blue); }
-  .orbit-green { bottom: 64px; left: 48px; background: var(--brand-green); }
-  .orbit-yellow { top: 47%; left: 35px; background: var(--brand-yellow); }
-
-  .quick-section {
-    display: grid;
-    gap: 16px;
-  }
-
-  .quick-grid {
-    display: grid;
-    gap: 10px;
-  }
-
-  .quick-card {
-    position: relative;
-    min-height: 100px;
-    padding: 17px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 14px;
-    text-decoration: none;
-    transition: translate 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-  }
-
-  .quick-card:hover {
-    translate: 0 -2px;
-    box-shadow: var(--shadow-md);
-  }
-
-  .quick-card.blue:hover { border-color: rgb(0 119 184 / 0.35); }
-  .quick-card.green:hover { border-color: rgb(23 150 14 / 0.32); }
-  .quick-card.yellow:hover { border-color: rgb(122 98 0 / 0.3); }
-
-  .quick-icon {
-    width: 45px;
-    height: 45px;
-    display: grid;
-    place-items: center;
-    border-radius: 15px;
-    color: var(--brand-blue-ink);
-    background: var(--surface-blue);
-  }
-
-  .green .quick-icon {
-    color: var(--brand-green-deep);
-    background: var(--surface-green);
-  }
-
-  .yellow .quick-icon {
-    color: #675400;
-    background: var(--surface-yellow);
-  }
-
-  .quick-icon :global(svg) {
-    width: 22px;
-    height: 22px;
-  }
-
-  .quick-card > span:nth-child(2) {
-    min-width: 0;
-    display: grid;
-    gap: 4px;
-  }
-
-  .quick-card strong {
-    color: var(--ink-strong);
-  }
-
-  .quick-card small {
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .arrow {
-    color: var(--muted);
-    font-size: 1.1rem;
-  }
-
-  .capability-grid {
-    display: grid;
-    gap: 12px;
-  }
-
-  .capability {
-    min-height: 260px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .capability h2 {
-    margin: 12px 0 9px;
-    color: var(--ink-strong);
-    font-size: clamp(1.5rem, 4vw, 2.25rem);
-    letter-spacing: -0.045em;
-    line-height: 1;
-  }
-
-  .capability p {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .capability a {
-    margin-top: auto;
-    padding-top: 22px;
-    color: var(--brand-blue-ink);
-    font-weight: 820;
-    text-decoration: none;
-  }
-
-  .verification-note {
-    padding: 18px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 14px;
-    border-style: dashed;
-    background: rgb(255 255 255 / 0.7);
-  }
-
-  .verification-symbol {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    background: var(--surface-yellow);
-    color: #5f4d00;
-    font-weight: 900;
-  }
-
-  .verification-note strong {
-    color: var(--ink-strong);
-  }
-
-  .verification-note p {
-    margin: 4px 0 0;
-    color: var(--muted);
-    line-height: 1.55;
-  }
-
-  @media (min-width: 640px) {
-    .quick-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 920px) {
-    .hero {
-      min-height: 650px;
-      grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.72fr);
-    }
-
-    .hero-visual {
-      display: block;
-    }
-
-    .quick-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
-    .quick-card {
-      min-height: 180px;
-      grid-template-columns: 1fr auto;
-      align-content: start;
-    }
-
-    .quick-icon {
-      grid-column: 1;
-    }
-
-    .quick-card > span:nth-child(2) {
-      grid-column: 1 / -1;
-      align-self: end;
-    }
-
-    .quick-card .arrow {
-      grid-column: 2;
-      grid-row: 1;
-    }
-
-    .capability-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-</style>

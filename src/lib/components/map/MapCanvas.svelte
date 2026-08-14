@@ -23,7 +23,7 @@
   const routePoints = $derived(
     routeNodeIds
       .map((id) => nodeIndex.get(id))
-      .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
+      .filter((node): node is NonNullable<typeof node> => node?.floor === floor)
       .map((node) => `${node.x},${node.y}`)
       .join(' ')
   );
@@ -45,7 +45,7 @@
 <div class="map-wrap">
   <svg
     viewBox={`0 0 ${building.canvas.width} ${building.canvas.height}`}
-    role="img"
+    role="group"
     aria-label={`${floor} floor schematic map`}
   >
     <rect class="canvas" width={building.canvas.width} height={building.canvas.height} rx="24" />

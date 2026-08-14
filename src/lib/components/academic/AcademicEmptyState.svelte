@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Button from '$lib/components/ui/Button.svelte';
+  import StatusChip from '$lib/components/ui/StatusChip.svelte';
   let {
     title = 'No published data yet',
     message,
@@ -12,11 +14,11 @@
   } = $props();
 </script>
 
-<section class="empty-state card card--flat" aria-live="polite">
-  <span class="badge badge--yellow">Data pending</span>
-  <h2>{title}</h2>
-  <p>{message}</p>
+<section class="grid gap-3 border-l-4 border-ims-yellow bg-white p-5" aria-live="polite">
+  <StatusChip tone="warning" label="Data pending" />
+  <h2 class="text-xl font-semibold tracking-tight text-ink-strong">{title}</h2>
+  <p class="max-w-prose leading-relaxed text-muted">{message}</p>
   {#if actionHref && actionLabel}
-    <a class="button button--secondary" href={actionHref}>{actionLabel}</a>
+    <Button href={actionHref} label={actionLabel} tone="neutral" />
   {/if}
 </section>

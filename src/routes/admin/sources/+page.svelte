@@ -1,47 +1,5 @@
-<script lang="ts">
-  import { enhance } from '$app/forms';
-  let { data, form } = $props();
-</script>
-
-<svelte:head><title>Data sources · IMS Academic Hub</title></svelte:head>
-
-<header class="page-heading">
-  <div><p class="eyebrow">Provenance</p><h2>Data sources</h2><p>Register the authority behind an import before academic records can reference it.</p></div>
-</header>
-
-<div class="source-grid">
-  <form class="surface-panel source-form" method="POST" action="?/create" use:enhance>
-    <div><p class="eyebrow">Admin only</p><h3>Register a source</h3></div>
-    {#if form?.message}<div class="inline-alert" class:error={!form?.created} role={form?.created ? 'status' : 'alert'}>{form.message ?? 'Source registered.'}</div>{/if}
-    {#if form?.created}<div class="inline-alert success" role="status">Source registered.</div>{/if}
-    <label class="field"><span>Label</span><input class="input" name="label" required placeholder="IMS official class schedule" /></label>
-    <label class="field"><span>Source type</span><select class="select" name="sourceType" required><option value="">Choose type</option><option value="official_web">Official website</option><option value="official_sheet">Official sheet</option><option value="official_csv">Official CSV</option><option value="faculty_entry">Faculty entry</option><option value="admin_entry">Admin entry</option><option value="verified_report">Verified report</option><option value="other">Other</option></select></label>
-    <label class="field"><span>Authority</span><input class="input" name="authority" placeholder="Institute of Mathematical Sciences" /></label>
-    <label class="field"><span>HTTPS source URL</span><input class="input" name="sourceUrl" type="url" inputmode="url" placeholder="https://…" /></label>
-    <label class="field"><span>Internal notes</span><textarea class="textarea" name="notes" placeholder="Private reviewer notes. Never exposed by the public source view."></textarea></label>
-    <label class="source-visibility"><input type="checkbox" name="publicMetadata" /><span><strong>Show this source as public provenance</strong><small>Enable only when the label, authority, and URL are safe to show to every student. Internal sheets can stay private.</small></span></label>
-    <button class="button primary" type="submit">Register source</button>
-  </form>
-
-  <section class="surface-panel source-list" aria-labelledby="source-list-title">
-    <div class="section-heading"><div><p class="eyebrow">Safe public metadata</p><h3 id="source-list-title">Registered sources</h3></div><span>{data.sources.length}</span></div>
-    {#if data.sources.length}
-      <div class="rows">
-        {#each data.sources as source}
-          <article>
-            <div><strong>{source.label}</strong><span>{source.authority ?? source.source_type.replaceAll('_', ' ')} · {source.public_metadata ? 'public provenance' : 'internal source'}</span></div>
-            {#if source.source_url}<a href={source.source_url} target="_blank" rel="noopener noreferrer">Source ↗</a>{/if}
-          </article>
-        {/each}
-      </div>
-    {:else}<p class="empty">No sources registered yet.</p>{/if}
-  </section>
-</div>
-
-<style>
-  .page-heading{margin-bottom:1rem}.page-heading h2{margin:.2rem 0;font-size:clamp(1.8rem,5vw,2.7rem);letter-spacing:-.04em}.page-heading p:not(.eyebrow){margin:0;color:var(--text-muted)}
-  .source-grid{display:grid;gap:1rem;align-items:start}.source-form,.source-list{padding:1rem;display:grid;gap:.85rem}.source-form h3,.source-list h3{margin:.15rem 0}.inline-alert{padding:.7rem;border-radius:var(--radius-md);background:var(--surface-subtle)}.inline-alert.error{background:var(--danger-soft);color:var(--danger)}.inline-alert.success{background:var(--ims-green-soft);color:var(--ims-green-deep)}
-  .source-visibility{display:flex;gap:.7rem;align-items:flex-start;padding:.75rem;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--surface-subtle)}.source-visibility input{inline-size:1.1rem;block-size:1.1rem;margin-top:.1rem;accent-color:var(--ims-blue)}.source-visibility span{display:grid;gap:.15rem}.source-visibility small{color:var(--text-muted);line-height:1.45}
-  .section-heading{display:flex;justify-content:space-between;gap:1rem;align-items:end}.section-heading>span{color:var(--text-muted)}.rows{display:grid}.rows article{min-height:64px;padding:.7rem 0;display:flex;justify-content:space-between;gap:1rem;align-items:center;border-top:1px solid var(--line-soft)}.rows article>div{display:grid;gap:.15rem}.rows span{color:var(--text-muted);font-size:.82rem;text-transform:capitalize}.rows a{color:var(--ims-blue-ink);font-weight:750}.empty{color:var(--text-muted)}
-  @media(min-width:900px){.source-grid{grid-template-columns:minmax(320px,.75fr) minmax(0,1.25fr)}}
-</style>
+<script lang="ts">import {enhance} from '$app/forms'; let {data,form}=$props(); const input='min-h-12 w-full border border-line-strong bg-white px-3 text-ink outline-none focus:border-ims-blue-deep focus-visible:ring-3 focus-visible:ring-ims-blue/20';</script>
+<svelte:head><title>Data Sources · IMS Academic Hub</title></svelte:head>
+<header class="border-b border-line pb-4"><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Provenance</p><h2 class="mt-1 text-4xl font-semibold tracking-[-.05em]">Data sources</h2><p class="mt-1 text-muted">Register the authority behind an import before records can reference it.</p></header>
+<div class="mt-4 grid items-start gap-4 lg:grid-cols-[.8fr_1.2fr]"><form class="grid gap-4 border border-line-strong bg-white p-5" method="POST" action="?/create" use:enhance><div><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Admin only</p><h3 class="text-xl font-semibold">Register a source</h3></div>{#if form?.message}<div class={`border-l-4 p-3 ${form?.created?'border-ims-green bg-green-50 text-green-900':'border-danger bg-red-50 text-red-900'}`} role={form?.created?'status':'alert'}>{form.message??'Source registered.'}</div>{/if}{#each [['Label','label','IMS official class schedule'],['Authority','authority','Institute of Mathematical Sciences'],['HTTPS source URL','sourceUrl','https://…']] as field}<label class="grid gap-1.5 text-sm font-bold"><span>{field[0]}</span><input class={input} name={field[1]} required={field[1]==='label'} type={field[1]==='sourceUrl'?'url':'text'} placeholder={field[2]}/></label>{/each}<label class="grid gap-1.5 text-sm font-bold"><span>Source type</span><select class={input} name="sourceType" required><option value="">Choose type</option>{#each [['official_web','Official website'],['official_sheet','Official sheet'],['official_csv','Official CSV'],['faculty_entry','Faculty entry'],['admin_entry','Admin entry'],['verified_report','Verified report'],['other','Other']] as option}<option value={option[0]}>{option[1]}</option>{/each}</select></label><label class="grid gap-1.5 text-sm font-bold"><span>Internal notes</span><textarea class={`${input} min-h-28 py-3`} name="notes" placeholder="Private reviewer notes…"></textarea></label><label class="flex gap-3 border border-line bg-slate-50 p-3"><input class="mt-1 size-5 accent-ims-blue" type="checkbox" name="publicMetadata"/><span><strong class="block">Show this source as public provenance</strong><small class="text-muted">Enable only when its label, authority, and URL are safe for every student.</small></span></label><button class="min-h-12 bg-ims-blue-deep px-4 font-bold text-white" type="submit">Register Source</button></form>
+<section class="border border-line-strong bg-white p-5"><header class="flex justify-between border-b border-line pb-3"><div><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Safe public metadata</p><h3 class="text-xl font-semibold">Registered sources</h3></div><span class="font-mono text-muted">{data.sources.length}</span></header>{#if data.sources.length}<div class="divide-y divide-line">{#each data.sources as source}<article class="flex min-h-16 items-center justify-between gap-3 py-3"><div class="grid"><strong>{source.label}</strong><span class="text-sm capitalize text-muted">{source.authority??source.source_type.replaceAll('_',' ')} · {source.public_metadata?'public provenance':'internal source'}</span></div>{#if source.source_url}<a class="font-bold text-ims-blue-ink" href={source.source_url} target="_blank" rel="noopener noreferrer">Source ↗</a>{/if}</article>{/each}</div>{:else}<p class="py-5 text-muted">No sources registered yet.</p>{/if}</section></div>

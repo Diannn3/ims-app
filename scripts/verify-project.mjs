@@ -87,9 +87,14 @@ assert(!/maximum-scale\s*=\s*1/i.test(appHtml), 'Browser zoom must not be disabl
 assert(!/user-scalable\s*=\s*no/i.test(appHtml), 'Browser zoom must not be disabled with user-scalable=no');
 
 const layout = await text('src/routes/+layout.svelte');
-assert(layout.includes('class="skip-link"'), 'Application shell must include a skip link');
+const appHeader = await text('src/lib/components/shell/AppHeader.svelte');
+const bottomNavigation = await text('src/lib/components/shell/BottomNavigation.svelte');
+assert(layout.includes('href="#main-content"'), 'Application shell must include a skip link');
 assert(layout.includes('id="main-content"'), 'Application shell must expose #main-content');
-assert(layout.includes('aria-current'), 'Application navigation must expose aria-current');
+assert(
+  appHeader.includes('aria-current') && bottomNavigation.includes('aria-current'),
+  'Desktop and mobile application navigation must expose aria-current'
+);
 
 const hooks = await text('src/hooks.server.ts');
 assert(hooks.includes("X-Frame-Options', 'DENY"), 'Server security headers must block framing');

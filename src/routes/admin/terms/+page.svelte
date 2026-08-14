@@ -1,40 +1,6 @@
-<script lang="ts">
-  import { enhance } from '$app/forms';
-  let { data, form } = $props();
-</script>
-
-<svelte:head><title>Academic terms · IMS Academic Hub</title></svelte:head>
-<header class="page-heading"><div><p class="eyebrow">Term control</p><h2>Academic terms</h2><p>Only one term can be current. Switching is performed atomically by the database.</p></div></header>
-
-{#if form?.message}<div class="inline-alert error" role="alert">{form.message}</div>{/if}
-{#if form?.created}<div class="inline-alert success" role="status">Academic term created.</div>{/if}
-{#if form?.currentUpdated}<div class="inline-alert success" role="status">Current academic term updated.</div>{/if}
-
-<div class="term-grid">
-  <form class="surface-panel term-form" method="POST" action="?/create" use:enhance>
-    <div><p class="eyebrow">Admin only</p><h3>Create a term</h3></div>
-    <label class="field"><span>Stable term ID</span><input class="input" name="id" required placeholder="AY2627-1" /></label>
-    <label class="field"><span>Academic year</span><input class="input" name="academicYear" required placeholder="2026-2027" /></label>
-    <label class="field"><span>Term name</span><input class="input" name="termName" required placeholder="First Semester" /></label>
-    <div class="date-grid"><label class="field"><span>Starts</span><input class="input" name="startsOn" type="date" /></label><label class="field"><span>Ends</span><input class="input" name="endsOn" type="date" /></label></div>
-    <button class="button primary" type="submit">Create term</button>
-  </form>
-
-  <section class="surface-panel term-list" aria-labelledby="term-list-title">
-    <div class="section-heading"><div><p class="eyebrow">Registry</p><h3 id="term-list-title">Terms</h3></div><span>{data.terms.length}</span></div>
-    <div class="rows">
-      {#each data.terms as term}
-        <article>
-          <div><strong>{term.academic_year} · {term.term_name}</strong><span>{term.id}{term.starts_on ? ` · ${term.starts_on}` : ''}</span></div>
-          {#if term.is_current}<span class="current-pill">Current</span>{:else}<form method="POST" action="?/makeCurrent" use:enhance><input type="hidden" name="termId" value={term.id}/><button class="button secondary" type="submit">Make current</button></form>{/if}
-        </article>
-      {/each}
-    </div>
-  </section>
-</div>
-
-<style>
-  .page-heading{margin-bottom:1rem}.page-heading h2{margin:.2rem 0;font-size:clamp(1.8rem,5vw,2.7rem);letter-spacing:-.04em}.page-heading p:not(.eyebrow){margin:0;color:var(--text-muted)}.inline-alert{margin-bottom:.75rem;padding:.7rem;border-radius:var(--radius-md)}.inline-alert.error{background:var(--danger-soft);color:var(--danger)}.inline-alert.success{background:var(--ims-green-soft);color:var(--ims-green-deep)}
-  .term-grid{display:grid;gap:1rem;align-items:start}.term-form,.term-list{padding:1rem;display:grid;gap:.85rem}.term-form h3,.term-list h3{margin:.15rem 0}.date-grid{display:grid;gap:.65rem}.section-heading{display:flex;justify-content:space-between;gap:1rem;align-items:end}.section-heading>span{color:var(--text-muted)}.rows{display:grid}.rows article{min-height:68px;padding:.7rem 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid var(--line-soft)}.rows article>div{display:grid;gap:.15rem}.rows span{color:var(--text-muted);font-size:.82rem}.current-pill{padding:.4rem .6rem;border-radius:999px;background:var(--ims-green-soft);color:var(--ims-green-deep)!important;font-weight:800}.rows .button{white-space:nowrap}
-  @media(min-width:620px){.date-grid{grid-template-columns:1fr 1fr}}@media(min-width:900px){.term-grid{grid-template-columns:minmax(320px,.75fr) minmax(0,1.25fr)}}
-</style>
+<script lang="ts">import {enhance} from '$app/forms'; let {data,form}=$props(); const input='min-h-12 w-full border border-line-strong bg-white px-3 text-ink outline-none focus:border-ims-blue-deep focus-visible:ring-3 focus-visible:ring-ims-blue/20';</script>
+<svelte:head><title>Academic Terms · IMS Academic Hub</title></svelte:head>
+<header class="border-b border-line pb-4"><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Term control</p><h2 class="mt-1 text-4xl font-semibold tracking-[-.05em]">Academic terms</h2><p class="mt-1 text-muted">Only one term can be current. Switching is performed atomically by the database.</p></header>
+{#if form?.message}<div class="mt-4 border-l-4 border-danger bg-red-50 p-3 text-red-900" role="alert">{form.message}</div>{/if}{#if form?.created}<div class="mt-4 border-l-4 border-ims-green bg-green-50 p-3 text-green-900" role="status">Academic term created.</div>{/if}{#if form?.currentUpdated}<div class="mt-4 border-l-4 border-ims-green bg-green-50 p-3 text-green-900" role="status">Current academic term updated.</div>{/if}
+<div class="mt-4 grid items-start gap-4 lg:grid-cols-[.8fr_1.2fr]"><form class="grid gap-4 border border-line-strong bg-white p-5" method="POST" action="?/create" use:enhance><div><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Admin only</p><h3 class="text-xl font-semibold">Create a term</h3></div>{#each [['Stable term ID','id','AY2627-1'],['Academic year','academicYear','2026-2027'],['Term name','termName','First Semester']] as field}<label class="grid gap-1.5 text-sm font-bold"><span>{field[0]}</span><input class={input} name={field[1]} required placeholder={field[2]}/></label>{/each}<div class="grid gap-3 sm:grid-cols-2">{#each [['Starts','startsOn'],['Ends','endsOn']] as field}<label class="grid gap-1.5 text-sm font-bold"><span>{field[0]}</span><input class={input} name={field[1]} type="date"/></label>{/each}</div><button class="min-h-12 bg-ims-blue-deep px-4 font-bold text-white" type="submit">Create Term</button></form>
+<section class="border border-line-strong bg-white p-5" aria-labelledby="term-list-title"><header class="flex justify-between border-b border-line pb-3"><div><p class="font-mono text-xs uppercase tracking-[.14em] text-ims-blue-ink">Registry</p><h3 class="text-xl font-semibold" id="term-list-title">Terms</h3></div><span class="font-mono text-muted">{data.terms.length}</span></header><div class="divide-y divide-line">{#each data.terms as term}<article class="flex min-h-16 items-center justify-between gap-3 py-3"><div class="grid"><strong>{term.academic_year} · {term.term_name}</strong><span class="font-mono text-xs text-muted">{term.id}{term.starts_on?` · ${term.starts_on}`:''}</span></div>{#if term.is_current}<span class="border border-green-200 bg-green-50 px-2 py-1 text-xs font-bold text-green-800">Current</span>{:else}<form method="POST" action="?/makeCurrent" use:enhance><input type="hidden" name="termId" value={term.id}/><button class="min-h-11 border border-line-strong px-3 font-bold hover:bg-slate-50" type="submit">Make Current</button></form>{/if}</article>{/each}</div></section></div>
