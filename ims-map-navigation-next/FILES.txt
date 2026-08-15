@@ -1,0 +1,8 @@
+src/lib/domain/navigation/map-camera.ts
+src/lib/domain/navigation/__tests__/map-camera.test.ts
+src/lib/data/math-building/floor-visuals.ts
+src/lib/components/map/MapCanvas.svelte
+src/lib/components/map/MapViewport.svelte
+src/routes/map/+page.svelte
+docs/MAP_VISUAL_SYSTEM.md
+tests/e2e/accessibility-and-map.spec.ts

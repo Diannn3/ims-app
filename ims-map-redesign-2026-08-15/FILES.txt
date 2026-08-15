@@ -1,4 +1,0 @@
-src/lib/data/math-building/floor-visuals.ts
-src/lib/components/map/MapCanvas.svelte
-src/lib/components/map/MapViewport.svelte
-docs/MAP_VISUAL_SYSTEM.md

@@ -3,17 +3,28 @@
   import graphData from '$lib/data/math-building/graph.json';
   import { floorVisuals } from '$lib/data/math-building/floor-visuals';
   import { spaces } from '$lib/domain/navigation/spaces';
+  import type { MapViewBox } from '$lib/domain/navigation/map-camera';
   import type { FloorId, GraphData } from '$lib/domain/navigation/types';
+
+  type DetailLevel = 'overview' | 'detail';
 
   let {
     floor,
     selectedSpaceId = null,
     routeNodeIds = [],
+    routeSegmentIndex = 0,
+    routeSegmentCount = 1,
+    viewBox = { x: 0, y: 0, width: building.canvas.width, height: building.canvas.height },
+    detailLevel = 'overview',
     onSelect = () => {}
   }: {
     floor: FloorId;
     selectedSpaceId?: string | null;
     routeNodeIds?: string[];
+    routeSegmentIndex?: number;
+    routeSegmentCount?: number;
+    viewBox?: MapViewBox;
+    detailLevel?: DetailLevel;
     onSelect?: (spaceId: string) => void;
   } = $props();
 
@@ -22,20 +33,28 @@
 
   const visual = $derived(floorVisuals[floor]);
   const floorSpaces = $derived(spaces.filter((space) => space.floor === floor));
+  const selectedSpace = $derived(floorSpaces.find((space) => space.id === selectedSpaceId) ?? null);
   const routeFloorNodes = $derived(
     routeNodeIds
       .map((id) => nodeIndex.get(id))
       .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
   );
-  const routePoints = $derived(routeFloorNodes.map((node) => `${node.x},${node.y}`).join(' '));
+  const routeSegments = $derived(
+    routeFloorNodes.slice(1).map((to, index) => ({ from: routeFloorNodes[index], to }))
+  );
   const routeStart = $derived(routeFloorNodes.length ? routeFloorNodes[0] : null);
   const routeEnd = $derived(routeFloorNodes.length ? routeFloorNodes[routeFloorNodes.length - 1] : null);
+  const isFirstRouteFloor = $derived(routeSegmentIndex === 0);
+  const isLastRouteFloor = $derived(routeSegmentIndex === routeSegmentCount - 1);
+  const markerId = $derived(`route-arrow-${floor}`);
 
   function labelLines(space: (typeof spaces)[number]) {
-    if (space.kind === 'stairs') return [space.name.replace(' Stairs', ''), 'Stairs'];
     if (space.kind === 'toilet') return [space.name.replace(' Toilet', ''), 'Toilet'];
     if (space.kind === 'entrance') return ['Main', 'Entrance'];
-    return space.subtitle ? [space.name, space.subtitle] : [space.name];
+    if (detailLevel === 'detail' || space.id === selectedSpaceId) {
+      return space.subtitle ? [space.name, space.subtitle] : [space.name];
+    }
+    return [space.name];
   }
 
   function onKeydown(event: KeyboardEvent, id: string) {
@@ -46,16 +65,18 @@
   }
 </script>
 
-<div class="map-wrap">
+<div class="map-wrap" class:detail={detailLevel === 'detail'}>
   <svg
-    viewBox={`0 0 ${building.canvas.width} ${building.canvas.height}`}
+    viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
+    preserveAspectRatio="xMidYMid meet"
     role="group"
     aria-label={`${visual.displayLabel} schematic map with selectable rooms and facilities`}
   >
     <title>{visual.displayLabel} — IMS Math Building</title>
     <desc>
-      Interactive schematic floor plan. Rooms and facilities are selectable. The map geometry is based on
-      supplied orientation references and remains subject to physical site verification.
+      Interactive schematic floor plan. Rooms and facilities are selectable. Direction arrows show the
+      active prototype route. Geometry is reference-matched to supplied orientation posters and still
+      requires physical site verification.
     </desc>
 
     <defs>
@@ -72,11 +93,23 @@
         <stop offset="100%" stop-color="#005f91" />
       </linearGradient>
       <filter id="room-shadow" x="-12%" y="-12%" width="124%" height="135%">
-        <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#00476d" flood-opacity="0.28" />
+        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#00476d" flood-opacity="0.24" />
       </filter>
       <filter id="route-shadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00476d" flood-opacity="0.35" />
+        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00476d" flood-opacity="0.32" />
       </filter>
+      <marker
+        id={markerId}
+        markerWidth="14"
+        markerHeight="14"
+        refX="11"
+        refY="7"
+        orient="auto"
+        markerUnits="userSpaceOnUse"
+        viewBox="0 0 14 14"
+      >
+        <path d="M 1 1 L 13 7 L 1 13 Z" class="route-arrow" />
+      </marker>
     </defs>
 
     <rect class="canvas" width={building.canvas.width} height={building.canvas.height} rx="24" />
@@ -125,6 +158,14 @@
                   V ${space.geometry.y + 18}`}
             />
           </g>
+          {#if detailLevel === 'detail' || space.id === selectedSpaceId}
+            <text
+              class="facility-label"
+              x={space.geometry.x + space.geometry.width / 2}
+              y={space.geometry.y + space.geometry.height + 18}
+              text-anchor="middle"
+            >Stairs</text>
+          {/if}
         {:else if space.kind === 'entrance'}
           <rect
             class="entrance-hit"
@@ -188,18 +229,60 @@
       </g>
     {/each}
 
-    {#if routePoints}
+    {#if routeSegments.length}
       <g class="route-layer" aria-hidden="true" filter="url(#route-shadow)">
-        <polyline class="route-halo" points={routePoints} />
-        <polyline class="route" points={routePoints} />
+        {#each routeSegments as segment}
+          <line
+            class="route-halo"
+            x1={segment.from.x}
+            y1={segment.from.y}
+            x2={segment.to.x}
+            y2={segment.to.y}
+          />
+          <line
+            class="route"
+            x1={segment.from.x}
+            y1={segment.from.y}
+            x2={segment.to.x}
+            y2={segment.to.y}
+            marker-end={`url(#${markerId})`}
+          />
+        {/each}
+
         {#if routeStart}
-          <circle class="route-origin-ring" cx={routeStart.x} cy={routeStart.y} r="15" />
-          <circle class="route-origin" cx={routeStart.x} cy={routeStart.y} r="8" />
+          {#if isFirstRouteFloor}
+            <circle class="route-origin-ring" cx={routeStart.x} cy={routeStart.y} r="16" />
+            <circle class="route-origin" cx={routeStart.x} cy={routeStart.y} r="8" />
+          {:else}
+            <g class="floor-transition" transform={`translate(${routeStart.x} ${routeStart.y})`}>
+              <circle r="18" />
+              <path d="M -7 -2 L 0 -9 L 7 -2 M -7 3 L 0 10 L 7 3" />
+            </g>
+          {/if}
         {/if}
+
         {#if routeEnd}
-          <circle class="route-destination-ring" cx={routeEnd.x} cy={routeEnd.y} r="17" />
-          <circle class="route-destination" cx={routeEnd.x} cy={routeEnd.y} r="9" />
+          {#if isLastRouteFloor}
+            <circle class="route-destination-ring" cx={routeEnd.x} cy={routeEnd.y} r="18" />
+            <circle class="route-destination" cx={routeEnd.x} cy={routeEnd.y} r="9" />
+          {:else}
+            <g class="floor-transition" transform={`translate(${routeEnd.x} ${routeEnd.y})`}>
+              <circle r="18" />
+              <path d="M -7 -2 L 0 -9 L 7 -2 M -7 3 L 0 10 L 7 3" />
+            </g>
+          {/if}
         {/if}
+      </g>
+    {/if}
+
+    {#if selectedSpace}
+      <g
+        class="selected-pin"
+        transform={`translate(${selectedSpace.geometry.x + selectedSpace.geometry.width - 8} ${selectedSpace.geometry.y + 8})`}
+        aria-hidden="true"
+      >
+        <circle r="13" />
+        <circle r="4" />
       </g>
     {/if}
 
@@ -210,6 +293,9 @@
           <path class="exit-person" d="M -2 -10 a4 4 0 1 0 0.1 0 M -3 -3 l7 3 5 -6 M 1 0 l-5 9 M 3 1 l6 8 M 8 -11 v18" />
         {:else}
           <path class="entrance-arrow" d="M -11 0 H 9 M 2 -8 L 11 0 L 2 8" />
+        {/if}
+        {#if detailLevel === 'detail'}
+          <text x="0" y="36" text-anchor="middle">{marker.label}</text>
         {/if}
       </g>
     {/each}
@@ -233,7 +319,8 @@
     <span><i class="hallway-dot"></i> Hallway</span>
     <span><i class="route-dot"></i> Active route</span>
     <span><i class="origin-dot"></i> Route origin</span>
-    <span><i class="destination-dot"></i> Selected destination</span>
+    <span><i class="transition-dot"></i> Change floor</span>
+    <span><i class="destination-dot"></i> Destination</span>
     <span><i class="exit-dot"></i> Emergency exit</span>
   </div>
 </div>
@@ -241,7 +328,7 @@
 <style>
   .map-wrap {
     width: 100%;
-    min-width: 620px;
+    min-width: 0;
     overflow: hidden;
     border-radius: 18px;
     background: var(--brand-blue, #009bff);
@@ -249,13 +336,12 @@
 
   svg {
     width: 100%;
+    height: 100%;
     display: block;
-    touch-action: manipulation;
+    overflow: hidden;
   }
 
-  .canvas {
-    fill: url(#ims-map-field);
-  }
+  .canvas { fill: url(#ims-map-field); }
 
   .frame {
     fill: rgb(0 95 145 / 0.16);
@@ -314,14 +400,12 @@
     fill: url(#ims-room);
     stroke: #fff;
     stroke-width: 4;
-    transition: fill 120ms ease, stroke 120ms ease, stroke-width 120ms ease, filter 120ms ease;
+    vector-effect: non-scaling-stroke;
+    transition: fill 120ms ease, stroke 120ms ease, stroke-width 120ms ease;
   }
 
   .space.lab > rect:first-of-type,
-  .space.service > rect:first-of-type {
-    fill: #005f91;
-  }
-
+  .space.service > rect:first-of-type,
   .space.toilet > rect:first-of-type {
     fill: var(--brand-blue-ink, #005f91);
   }
@@ -332,7 +416,8 @@
     stroke-width: 1.5;
   }
 
-  .space text {
+  .space text,
+  .facility-label {
     fill: #fff;
     font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", monospace;
     font-size: 18px;
@@ -345,13 +430,17 @@
     font-family: inherit;
     font-size: 14px;
     font-weight: 760;
-    letter-spacing: -0.02em;
   }
 
   .space text .sub {
     fill: var(--brand-yellow, #faf807);
     font-family: inherit;
     font-size: 13px;
+    font-weight: 760;
+  }
+
+  .facility-label {
+    font-size: 11px;
     font-weight: 760;
   }
 
@@ -363,22 +452,16 @@
 
   .space:focus-visible > rect:not(.feature-accent):not(.entrance-hit),
   .space:focus-visible .facility-tile,
-  .space:focus-visible .entrance-hit {
-    stroke: var(--brand-yellow, #faf807);
-    stroke-width: 9;
-  }
-
+  .space:focus-visible .entrance-hit,
   .space.selected > rect:not(.feature-accent):not(.entrance-hit),
   .space.selected .facility-tile,
   .space.selected .entrance-hit {
-    fill: var(--brand-blue-ink, #005f91);
     stroke: var(--brand-yellow, #faf807);
     stroke-width: 9;
   }
 
-  .space.selected text,
-  .space.selected text .sub {
-    fill: #fff;
+  .space.selected > rect:not(.feature-accent):not(.entrance-hit) {
+    fill: var(--brand-blue-ink, #005f91);
   }
 
   .facility-tile {
@@ -416,31 +499,29 @@
     stroke-linejoin: round;
   }
 
-  .space:focus-visible .facility-tile,
-  .space:focus-visible .entrance-hit,
-  .space.selected .facility-tile,
-  .space.selected .entrance-hit {
-    stroke: var(--brand-yellow, #faf807) !important;
-    stroke-width: 9 !important;
-  }
-
   .route-halo,
   .route {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
   }
 
   .route-halo {
     stroke: #fff;
     stroke-width: 18;
-    opacity: 0.96;
+    opacity: 0.98;
   }
 
   .route {
     stroke: var(--brand-green, #17960e);
-    stroke-width: 9;
-    stroke-dasharray: 22 11;
+    stroke-width: 8;
+  }
+
+  .route-arrow {
+    fill: var(--brand-green, #17960e);
+    stroke: #fff;
+    stroke-width: 0.8;
   }
 
   .route-origin-ring,
@@ -460,15 +541,37 @@
     stroke-width: 4;
   }
 
+  .floor-transition circle {
+    fill: #fff;
+    stroke: var(--brand-blue-ink, #005f91);
+    stroke-width: 4;
+  }
+
+  .floor-transition path {
+    fill: none;
+    stroke: var(--brand-blue-ink, #005f91);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .selected-pin circle:first-child {
+    fill: var(--brand-yellow, #faf807);
+    stroke: #fff;
+    stroke-width: 4;
+  }
+
+  .selected-pin circle:last-child {
+    fill: var(--brand-blue-ink, #005f91);
+  }
+
   .exit-marker circle {
     fill: var(--brand-green, #17960e);
     stroke: #fff;
     stroke-width: 4;
   }
 
-  .exit-marker.entrance circle {
-    fill: var(--brand-yellow, #faf807);
-  }
+  .exit-marker.entrance circle { fill: var(--brand-yellow, #faf807); }
 
   .exit-marker path {
     fill: none;
@@ -478,8 +581,16 @@
     stroke-linejoin: round;
   }
 
-  .exit-marker.entrance path {
+  .exit-marker.entrance path { stroke: var(--brand-blue-ink, #005f91); }
+
+  .exit-marker text {
+    fill: #fff;
+    font-size: 11px;
+    font-weight: 760;
+    paint-order: stroke;
     stroke: var(--brand-blue-ink, #005f91);
+    stroke-width: 3;
+    stroke-linejoin: round;
   }
 
   .compass circle:first-child {
@@ -500,9 +611,7 @@
     stroke-width: 1;
   }
 
-  .compass path:first-of-type {
-    fill: var(--brand-yellow, #faf807);
-  }
+  .compass path:first-of-type { fill: var(--brand-yellow, #faf807); }
 
   .compass text {
     fill: #fff;
@@ -540,41 +649,31 @@
     flex: none;
   }
 
-  .room-dot {
-    background: var(--brand-blue-deep, #0077b8);
-  }
-
-  .hallway-dot {
-    background: var(--brand-yellow, #faf807);
-  }
+  .room-dot { background: var(--brand-blue-deep, #0077b8); }
+  .hallway-dot { background: var(--brand-yellow, #faf807); }
 
   .route-dot {
     width: 22px !important;
     height: 0 !important;
     border: 0 !important;
-    border-top: 4px dashed var(--brand-green, #17960e) !important;
+    border-top: 4px solid var(--brand-green, #17960e) !important;
     border-radius: 0 !important;
     box-shadow: 0 -1px 0 #fff, 0 1px 0 #fff;
   }
 
-  .origin-dot {
+  .origin-dot,
+  .destination-dot,
+  .exit-dot,
+  .transition-dot {
     border-radius: 50% !important;
-    background: var(--brand-green, #17960e);
   }
 
-  .destination-dot {
-    border-radius: 50% !important;
-    background: var(--brand-yellow, #faf807);
-  }
-
-  .exit-dot {
-    border-radius: 50% !important;
-    background: var(--brand-green, #17960e);
-  }
+  .origin-dot,
+  .exit-dot { background: var(--brand-green, #17960e); }
+  .destination-dot { background: var(--brand-yellow, #faf807); }
+  .transition-dot { background: #fff; border-color: var(--brand-blue-ink, #005f91) !important; }
 
   @media (prefers-reduced-motion: reduce) {
-    .space > rect {
-      transition: none;
-    }
+    .space > rect { transition: none; }
   }
 </style>
