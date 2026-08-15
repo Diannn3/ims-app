@@ -1,0 +1,14 @@
+{
+  "hook": {
+    "enabled": true,
+    "quiet": false
+  },
+  "detector": {
+    "designSystem": {
+      "enabled": true
+    },
+    "ignoreFiles": [
+      "src/lib/database.types.ts"
+    ]
+  }
+}

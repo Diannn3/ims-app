@@ -1,0 +1,599 @@
+/*
+ * IMS Academic Hub — Design System V2
+ * Creative north star: Academic Instrument
+ *
+ * This stylesheet intentionally layers on top of app.css. The older stylesheet
+ * remains as a compatibility layer for routes that have not completed their V2
+ * pass yet. New and migrated screens should use these tokens and shared shell
+ * rules instead of reintroducing gradients, oversized radii, or card-first layout.
+ */
+
+:root {
+  font-family:
+    "Aptos", "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui,
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size-adjust: 0.52;
+
+  /* Brand anchors — keep the supplied IMS mark unchanged. */
+  --brand-blue: #009bff;
+  --brand-blue-deep: #0077b8;
+  --brand-blue-ink: #005f91;
+  --brand-green: #17960e;
+  --brand-green-deep: #116b0a;
+  --brand-yellow: #faf807;
+
+  /* Academic Instrument neutral field. */
+  --ink: #142536;
+  --ink-strong: #071728;
+  --muted-strong: #45586a;
+  --muted: #667789;
+  --surface: #ffffff;
+  --surface-soft: #f4f8fb;
+  --surface-subtle: #eef4f8;
+  --surface-blue: #e9f5fc;
+  --surface-green: #edf7eb;
+  --surface-yellow: #fffbd8;
+  --page-field: #f5f8fb;
+  --line: #d8e2e9;
+  --line-strong: #b7cad7;
+  --line-dark: #8fa7b8;
+
+  --danger: #a12d35;
+  --danger-soft: #fff0f1;
+  --warning: #6f5900;
+  --success: var(--brand-green-deep);
+  --route: var(--brand-blue-deep);
+  --location: var(--brand-blue-deep);
+
+  /* Compact product geometry. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Elevation is reserved for overlap/transient layers. */
+  --shadow-sm: 0 1px 2px rgb(8 31 49 / 0.06);
+  --shadow-md: 0 10px 28px rgb(8 31 49 / 0.10);
+  --shadow-float: 0 -10px 30px rgb(8 31 49 / 0.10);
+
+  --page-max: 1180px;
+  --content-readable: 720px;
+  --header-height: 62px;
+  --mobile-nav-height: 68px;
+  --focus-ring: 0 0 0 3px rgb(0 119 184 / 0.22);
+
+  /* Semantic aliases retained for feature modules. */
+  --ims-blue: var(--brand-blue);
+  --ims-blue-deep: var(--brand-blue-deep);
+  --ims-blue-ink: var(--brand-blue-ink);
+  --ims-blue-soft: var(--surface-blue);
+  --ims-green: var(--brand-green);
+  --ims-green-deep: var(--brand-green-deep);
+  --ims-green-soft: var(--surface-green);
+  --ims-yellow: var(--brand-yellow);
+  --ims-yellow-soft: var(--surface-yellow);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted-strong);
+  --text-muted: var(--muted);
+  --surface-raised: var(--surface);
+  --line-soft: var(--line);
+}
+
+html {
+  scroll-padding-top: calc(var(--header-height) + 14px);
+}
+
+body {
+  background: var(--page-field);
+  color: var(--ink);
+}
+
+body::before {
+  display: none;
+}
+
+::selection {
+  color: var(--ink-strong);
+  background: rgb(250 248 7 / 0.62);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--ink-strong);
+}
+
+.identifier,
+.entity-code,
+.room-code,
+.course-code {
+  font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo,
+    Consolas, monospace;
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: -0.02em;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Application shell                                                          */
+/* -------------------------------------------------------------------------- */
+
+.app-shell {
+  min-height: 100svh;
+  padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: rgb(250 252 253 / 0.96);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .site-header {
+    background: rgb(250 252 253 / 0.90);
+    backdrop-filter: saturate(1.05) blur(12px);
+  }
+}
+
+.site-header__inner {
+  width: min(var(--page-max), 100%);
+  min-height: var(--header-height);
+  margin-inline: auto;
+  padding: calc(7px + env(safe-area-inset-top)) 16px 7px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-lockup {
+  flex: none;
+  gap: 9px;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-blue);
+  box-shadow: none;
+}
+
+.brand-copy {
+  gap: 0;
+}
+
+.brand-copy strong {
+  font-size: 14px;
+  font-weight: 780;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.brand-copy span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.header-search {
+  display: none;
+  min-width: 210px;
+  max-width: 360px;
+  flex: 1 1 300px;
+  height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.header-search:focus-within {
+  border-color: var(--brand-blue-deep);
+  box-shadow: var(--focus-ring);
+}
+
+.header-search svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--muted-strong);
+}
+
+.header-search input {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink-strong);
+  font-size: 13px;
+}
+
+.header-search input::placeholder {
+  color: #778796;
+}
+
+.header-search button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+  color: var(--brand-blue-ink);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.header-search-link {
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--muted-strong);
+  text-decoration: none;
+}
+
+.header-search-link:hover {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--brand-blue-ink);
+}
+
+.header-search-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+.desktop-nav {
+  margin-left: auto;
+  gap: 2px;
+}
+
+.desktop-nav a {
+  position: relative;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: 0;
+  color: var(--muted-strong);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.desktop-nav a:hover {
+  color: var(--ink-strong);
+  background: transparent;
+}
+
+.desktop-nav a[aria-current="page"] {
+  color: var(--brand-blue-ink);
+  background: transparent;
+  box-shadow: none;
+}
+
+.desktop-nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 3px;
+  height: 2px;
+  background: var(--brand-blue-deep);
+}
+
+#main-content {
+  min-height: 70svh;
+}
+
+.page {
+  width: min(var(--page-max), 100%);
+  margin-inline: auto;
+  padding: 26px 16px 48px;
+}
+
+.page--narrow {
+  width: min(840px, 100%);
+}
+
+.page-stack {
+  gap: 20px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Global product typography / hierarchy                                      */
+/* -------------------------------------------------------------------------- */
+
+.hero-kicker,
+.eyebrow,
+.kicker {
+  color: var(--brand-blue-ink);
+  font-size: 10.5px;
+  font-weight: 780;
+  letter-spacing: 0.10em;
+}
+
+.hero-kicker::before,
+.eyebrow::before {
+  width: 13px;
+  height: 2px;
+  border-radius: 0;
+  background: var(--brand-blue-deep);
+}
+
+.page-heading {
+  gap: 6px;
+}
+
+.page-heading h1,
+.hero h1 {
+  color: var(--ink-strong);
+  letter-spacing: -0.035em;
+}
+
+.page-heading h1 {
+  max-width: 20ch;
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  line-height: 1.04;
+}
+
+.page-heading p,
+.hero p {
+  max-width: 68ch;
+  color: var(--muted-strong);
+  line-height: 1.6;
+}
+
+.section-header {
+  align-items: end;
+  gap: 16px;
+}
+
+.section-header h2 {
+  font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+  letter-spacing: -0.025em;
+}
+
+.section-header p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Surfaces and controls                                                       */
+/* -------------------------------------------------------------------------- */
+
+.card,
+.surface-panel {
+  border-color: var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.card--blue {
+  border-color: #c9dfea;
+  background: var(--surface-blue);
+}
+
+.card--green {
+  border-color: #cde3c9;
+  background: var(--surface-green);
+}
+
+.card--yellow {
+  border-color: #e7df9f;
+  background: var(--surface-yellow);
+}
+
+.button {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 760;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.button:hover {
+  translate: none;
+}
+
+.button--primary,
+.button.primary {
+  border-color: var(--brand-blue-deep);
+  background: var(--brand-blue-deep);
+  box-shadow: none;
+}
+
+.button--primary:hover,
+.button.primary:hover {
+  background: var(--brand-blue-ink);
+  box-shadow: none;
+}
+
+.button--secondary,
+.button.secondary {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.button--secondary:hover,
+.button.secondary:hover {
+  border-color: var(--line-dark);
+  background: var(--surface-soft);
+}
+
+.button--quiet,
+.button.ghost {
+  color: var(--brand-blue-ink);
+}
+
+.icon-button {
+  border-color: var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.input,
+.select,
+.textarea {
+  border-color: var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--line-dark);
+}
+
+.badge,
+.chip {
+  min-height: 26px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 760;
+}
+
+.empty-state,
+.error-state {
+  padding: 22px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile navigation                                                          */
+/* -------------------------------------------------------------------------- */
+
+.mobile-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: 100%;
+  min-height: var(--mobile-nav-height);
+  transform: none;
+  padding: 4px max(8px, env(safe-area-inset-right))
+    calc(4px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  grid-template-columns: repeat(5, 1fr);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: rgb(251 253 254 / 0.97);
+  box-shadow: var(--shadow-float);
+}
+
+.mobile-nav a {
+  position: relative;
+  min-height: 60px;
+  padding: 6px 3px;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.mobile-nav svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mobile-nav a[aria-current="page"] {
+  color: var(--brand-blue-ink);
+  background: transparent;
+  box-shadow: none;
+}
+
+.mobile-nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 22px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--brand-blue-deep);
+}
+
+.mobile-nav a[aria-current="page"]::after {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .header-search {
+    display: flex;
+  }
+
+  .header-search-link {
+    display: none;
+  }
+}
+
+@media (min-width: 760px) {
+  .page {
+    padding: 34px 24px 56px;
+  }
+
+  .site-header__inner {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 940px) {
+  .app-shell {
+    padding-bottom: 0;
+  }
+
+  .site-header__inner {
+    min-height: var(--header-height);
+  }
+
+  .header-search {
+    margin-left: clamp(8px, 2vw, 28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .desktop-nav a,
+  .mobile-nav a,
+  .header-search-link {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: #91a7b6;
+    --line-strong: #617c8f;
+  }
+
+  .site-header,
+  .mobile-nav {
+    border-width: 2px;
+  }
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .mobile-nav {
+    backdrop-filter: none;
+  }
+}
