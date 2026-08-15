@@ -82,9 +82,17 @@ select lives_ok(
   )$$,
   'admin can stage two source rows that corroborate one instructor assignment'
 );
+reset role;
+select set_config(
+  'ims.test.assignment_batch_1',
+  (select id::text from public.import_batches where filename = 'assignment-provenance-initial.csv'),
+  true
+);
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000013';
 select lives_ok(
   $$select public.apply_import_batch(
-    (select id from public.import_batches where filename = 'assignment-provenance-initial.csv'),
+    current_setting('ims.test.assignment_batch_1')::uuid,
     'assignment-provenance-preview-1'
   )$$,
   'initial multi-source assignment batch applies'
@@ -147,8 +155,16 @@ select public.stage_schedule_import_batch(
   1,
   false
 );
+reset role;
+select set_config(
+  'ims.test.assignment_batch_2',
+  (select id::text from public.import_batches where filename = 'assignment-provenance-b-null.csv'),
+  true
+);
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000013';
 select public.apply_import_batch(
-  (select id from public.import_batches where filename = 'assignment-provenance-b-null.csv'),
+  current_setting('ims.test.assignment_batch_2')::uuid,
   'assignment-provenance-preview-2'
 );
 reset role;
@@ -201,8 +217,16 @@ select public.stage_schedule_import_batch(
   1,
   false
 );
+reset role;
+select set_config(
+  'ims.test.assignment_batch_3',
+  (select id::text from public.import_batches where filename = 'assignment-provenance-a-null.csv'),
+  true
+);
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000013';
 select public.apply_import_batch(
-  (select id from public.import_batches where filename = 'assignment-provenance-a-null.csv'),
+  current_setting('ims.test.assignment_batch_3')::uuid,
   'assignment-provenance-preview-3'
 );
 reset role;

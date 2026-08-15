@@ -50,9 +50,9 @@ update public.profiles set role = 'faculty' where user_id = '10000000-0000-0000-
 -- Student: cannot see internal sources, cannot directly stage, cannot call staging RPC.
 set local role authenticated;
 set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000001';
-select throws_ok(
-  $$select count(*) from public.data_sources$$,
-  '42501', null,
+select results_eq(
+  $$select count(*)::bigint from public.data_sources$$,
+  array[0::bigint],
   'student cannot inspect internal data sources'
 );
 select throws_ok(
@@ -124,18 +124,26 @@ select lives_ok(
   )$$,
   'content editor can stage a validated import through the atomic RPC'
 );
+reset role;
+select set_config(
+  'ims.test.editor_batch_id',
+  (select id::text from public.import_batches where filename = 'editor-rbac.csv'),
+  true
+);
 select results_eq(
   $$select status from public.import_batches where filename = 'editor-rbac.csv'$$,
   array['ready'::text],
   'editor staged batch becomes ready only after atomic staging completes'
 );
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000002';
 select throws_ok(
-  $$insert into public.import_rows (batch_id, row_number, raw_payload) values ((select id from public.import_batches where filename = 'editor-rbac.csv'), 99, '{}'::jsonb)$$,
+  $$insert into public.import_rows (batch_id, row_number, raw_payload) values (current_setting('ims.test.editor_batch_id')::uuid, 99, '{}'::jsonb)$$,
   '42501', null,
   'content editor cannot insert staging rows directly'
 );
 select throws_ok(
-  $$select public.apply_import_batch((select id from public.import_batches where filename = 'editor-rbac.csv'), 'editor-preview-hash')$$,
+  $$select public.apply_import_batch(current_setting('ims.test.editor_batch_id')::uuid, 'editor-preview-hash')$$,
   '42501', null,
   'content editor cannot apply an import batch'
 );
@@ -178,8 +186,16 @@ select lives_ok(
   )$$,
   'admin can stage a validated import'
 );
+reset role;
+select set_config(
+  'ims.test.admin_batch_id',
+  (select id::text from public.import_batches where filename = 'admin-rbac.csv'),
+  true
+);
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000003';
 select lives_ok(
-  $$select public.apply_import_batch((select id from public.import_batches where filename = 'admin-rbac.csv'), 'admin-preview-hash')$$,
+  $$select public.apply_import_batch(current_setting('ims.test.admin_batch_id')::uuid, 'admin-preview-hash')$$,
   'admin can atomically apply a ready batch'
 );
 reset role;
