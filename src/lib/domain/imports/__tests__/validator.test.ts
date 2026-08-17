@@ -30,6 +30,7 @@ describe('schedule import validator', () => {
     expect(issues).toHaveLength(0);
     expect(canonical?.roomId).toBe('mb304');
     const resolved = resolveScheduleRow(canonical!, context);
+    expect(resolved.resolved.courseCode).toBe('DEMO 101');
     expect(resolved.resolved.facultyId).toBeNull();
     expect(resolved.issues.some((issue) => issue.code === 'unknown_faculty')).toBe(true);
   });

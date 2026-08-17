@@ -1,7 +1,7 @@
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export function normalizeCourseCode(value: string) {
-  return value.trim().toUpperCase().replace(/[\s_-]+/g, '');
+  return value.trim().toLowerCase().replace(/[\s_-]+/g, '');
 }
 
 export function normalizeHumanQuery(value: string) {

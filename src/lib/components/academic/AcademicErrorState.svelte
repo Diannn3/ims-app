@@ -8,7 +8,7 @@
     <span class="state-label">Load problem</span>
     <h2>Academic data is temporarily unavailable.</h2>
     <p>{message}</p>
-    <a href="">Try again →</a>
+    <a href=".">Try again →</a>
   </div>
 </section>
 

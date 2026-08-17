@@ -10,9 +10,14 @@
     onChange?: (gradebook: GradebookDocument) => void;
   } = $props();
 
-  let name = $state(initial.name);
-  let categories = $state<GradeCategory[]>(structuredClone(initial.categories));
-  let gradingScale = $state(structuredClone(initial.gradingScale));
+  function cloneInitialDocument() {
+    return structuredClone(initial);
+  }
+
+  const initialDocument = cloneInitialDocument();
+  let name = $state(initialDocument.name);
+  let categories = $state<GradeCategory[]>(structuredClone(initialDocument.categories));
+  let gradingScale = $state(structuredClone(initialDocument.gradingScale));
   let target = $state(80);
   let whatIfAssessmentId = $state('');
   let whatIfEarned = $state<number | null>(null);
@@ -56,7 +61,7 @@
   $effect(() => {
     onChange({
       version: 1,
-      id: initial.id,
+      id: initialDocument.id,
       name,
       categories: structuredClone(categories),
       gradingScale: structuredClone(gradingScale),

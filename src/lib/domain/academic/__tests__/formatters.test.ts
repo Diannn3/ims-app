@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSearchQuery } from '../formatters';
+import { normalizeCourseCode, normalizeSearchQuery } from '../formatters';
+
+describe('normalizeCourseCode', () => {
+  it('matches the lowercase compact key used by the public course view', () => {
+    expect(normalizeCourseCode(' DEMO 101 ')).toBe('demo101');
+    expect(normalizeCourseCode('demo-101')).toBe('demo101');
+  });
+});
 
 describe('normalizeSearchQuery', () => {
   it('normalizes unicode/whitespace and removes LIKE wildcard syntax', () => {

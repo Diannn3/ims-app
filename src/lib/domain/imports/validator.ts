@@ -232,6 +232,10 @@ export function resolveScheduleRow(
   return {
     resolved: {
       ...canonical,
+      // Keep the compact normalized key for lookup/source identity, but persist
+      // the registrar's display code in the resolved payload. The database
+      // integrity trigger compares courseId against courses.code exactly.
+      courseCode: course?.code ?? canonical.courseCode,
       courseId: course?.id ?? null,
       facultyId
     },

@@ -86,7 +86,8 @@
   </div>
 
   {#if rows.length}
-    <div class="table-scroll" tabindex="0" aria-label="Scrollable import preview table">
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Scrollable import preview table">
       <table>
         <thead><tr><th>Row</th><th>Status</th><th>Course / section</th><th>Normalized meeting</th><th>Issues</th></tr></thead>
         <tbody>

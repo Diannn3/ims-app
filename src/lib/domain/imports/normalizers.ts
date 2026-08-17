@@ -5,7 +5,13 @@ const roomAliasMap = new Map<string, string>();
 for (const space of spaces) {
   const values = [space.id, space.name, ...(space.aliases ?? [])];
   for (const value of values) {
-    roomAliasMap.set(normalizeCompact(value), space.id);
+    const normalized = normalizeCompact(value);
+    roomAliasMap.set(normalized, space.id);
+    // Registrar exports often omit the building prefix (for example `304`).
+    // Only add the numeric alias for canonical MB room codes so a shorthand
+    // cannot accidentally resolve a facility with an unrelated identifier.
+    const numericAlias = normalized.match(/^mb(\d+[a-z]?)$/)?.[1];
+    if (numericAlias) roomAliasMap.set(numericAlias, space.id);
   }
 }
 
@@ -20,7 +26,7 @@ export function normalizeRoom(value: string) {
 }
 
 export function normalizeCourse(value: string) {
-  return normalizeCourseCode(value);
+  return normalizeCourseCode(value).toLowerCase();
 }
 
 export function normalizeEmail(value: string) {

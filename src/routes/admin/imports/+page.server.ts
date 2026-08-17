@@ -24,7 +24,7 @@ export const actions: Actions = {
   stage: async (event) => {
     const profile = requireRole(event, ['content_editor', 'admin']);
     const supabase = event.locals.supabase;
-    if (!supabase || !profile) return fail(503, { stageError: 'Academic administration is not configured.' });
+    if (!supabase || !profile) return fail(503, { stageError: 'Academic administration is not configured.', headerIssues: [] });
 
     const form = await event.request.formData();
     const file = form.get('schedule');
@@ -35,24 +35,24 @@ export const actions: Actions = {
     const authoritativeSnapshot = false;
 
     if (!(file instanceof File) || file.size === 0) {
-      return fail(400, { stageError: 'Choose a non-empty CSV file.' });
+      return fail(400, { stageError: 'Choose a non-empty CSV file.', headerIssues: [] });
     }
     if (file.size > MAX_IMPORT_BYTES) {
-      return fail(413, { stageError: `CSV exceeds the ${Math.round(MAX_IMPORT_BYTES / 1024 / 1024)} MB upload limit.` });
+      return fail(413, { stageError: `CSV exceeds the ${Math.round(MAX_IMPORT_BYTES / 1024 / 1024)} MB upload limit.`, headerIssues: [] });
     }
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      return fail(400, { stageError: 'The first importer accepts .csv files only.' });
+      return fail(400, { stageError: 'The first importer accepts .csv files only.', headerIssues: [] });
     }
     if (!sourceId || !termId) {
-      return fail(400, { stageError: 'Choose both a verified source and academic term.' });
+      return fail(400, { stageError: 'Choose both a verified source and academic term.', headerIssues: [] });
     }
 
     const setup = await getImportSetup(supabase);
     if (!setup.sources.some((source) => source.id === sourceId)) {
-      return fail(400, { stageError: 'The selected data source is not available.' });
+      return fail(400, { stageError: 'The selected data source is not available.', headerIssues: [] });
     }
     if (!setup.terms.some((term) => term.id === termId)) {
-      return fail(400, { stageError: 'The selected academic term is not available.' });
+      return fail(400, { stageError: 'The selected academic term is not available.', headerIssues: [] });
     }
 
     try {
@@ -90,10 +90,11 @@ export const actions: Actions = {
     } catch (error) {
       if (error && typeof error === 'object' && 'status' in error && 'location' in error) throw error;
       if (error instanceof ScheduleCsvInputError) {
-        return fail(400, { stageError: error.publicMessage });
+        return fail(400, { stageError: error.publicMessage, headerIssues: [] });
       }
       return fail(400, {
-        stageError: safeAdminActionError(error instanceof Error ? error : null, 'The CSV could not be staged.', 'imports:stage')
+        stageError: safeAdminActionError(error instanceof Error ? error : null, 'The CSV could not be staged.', 'imports:stage'),
+        headerIssues: []
       });
     }
   }
