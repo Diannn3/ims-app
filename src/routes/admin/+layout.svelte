@@ -2,12 +2,15 @@
   import { page } from '$app/state';
   let { data, children } = $props();
 
-  const links = [
+  const academicLinks = [
     { href: '/admin', label: 'Data health', exact: true },
     { href: '/admin/imports', label: 'Imports', exact: false },
     { href: '/admin/review', label: 'Review queue', exact: false },
     { href: '/admin/sources', label: 'Data sources', exact: false },
     { href: '/admin/terms', label: 'Academic terms', exact: false }
+  ];
+  const mapLinks = [
+    { href: '/admin/map', label: 'Map Studio', exact: true }
   ];
 </script>
 
@@ -17,7 +20,18 @@
     <h1>Control room</h1>
     <p class="admin-role">Signed in as {data.adminProfile?.role?.replace('_', ' ')}</p>
     <nav class="admin-nav">
-      {#each links as link}
+      {#if data.canManageMap}
+        {#each mapLinks as link}
+          <a
+            href={link.href}
+            aria-current={(link.exact ? page.url.pathname === link.href : page.url.pathname === link.href || page.url.pathname.startsWith(`${link.href}/`)) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        {/each}
+      {/if}
+      {#if data.adminProfile?.role === 'content_editor' || data.adminProfile?.role === 'admin'}
+      {#each academicLinks as link}
         <a
           href={link.href}
           aria-current={(link.exact ? page.url.pathname === link.href : page.url.pathname === link.href || page.url.pathname.startsWith(`${link.href}/`)) ? 'page' : undefined}
@@ -25,6 +39,7 @@
           {link.label}
         </a>
       {/each}
+      {/if}
     </nav>
     <div class="admin-note">
       <strong>Fail closed</strong>

@@ -12,7 +12,7 @@ function safeNext(value: string | null) {
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-  if (locals.profile && ['content_editor', 'admin'].includes(locals.profile.role)) {
+  if (locals.profile && ['content_editor', 'map_editor', 'admin'].includes(locals.profile.role)) {
     throw redirect(303, safeNext(url.searchParams.get('next')));
   }
 
@@ -26,7 +26,8 @@ export const actions: Actions = {
   default: async ({ request, locals, url }) => {
     if (!locals.supabase) {
       return fail(503, {
-        message: 'Staff authentication is not configured for this deployment.'
+        message: 'Staff authentication is not configured for this deployment.',
+        email: ''
       });
     }
 
@@ -53,7 +54,7 @@ export const actions: Actions = {
       .eq('user_id', authData.user.id)
       .maybeSingle();
 
-    if (profileError || !profile || !['content_editor', 'admin'].includes(profile.role)) {
+    if (profileError || !profile || !['content_editor', 'map_editor', 'admin'].includes(profile.role)) {
       await locals.supabase.auth.signOut();
       return fail(403, {
         message: 'This account is not approved for the IMS administration workspace.',

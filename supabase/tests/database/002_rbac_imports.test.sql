@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(28);
 
 select has_function(
   'public',
@@ -32,6 +32,22 @@ select ok(
 select ok(
   not has_column_privilege('authenticated', 'public.import_issues', 'message', 'UPDATE'),
   'authenticated role cannot rewrite validation issue content'
+);
+select ok(
+  has_column_privilege('authenticated', 'public.profiles', 'role', 'SELECT'),
+  'authenticated role can read its own profile row for sign-in role resolution'
+);
+select ok(
+  has_column_privilege('authenticated', 'public.import_batches', 'id', 'SELECT'),
+  'authenticated staff can read import batch metadata subject to RLS'
+);
+select ok(
+  has_column_privilege('authenticated', 'public.import_rows', 'id', 'SELECT'),
+  'authenticated staff can read staged import rows subject to RLS'
+);
+select ok(
+  has_column_privilege('authenticated', 'public.import_issues', 'id', 'SELECT'),
+  'authenticated staff can read validation issues subject to RLS'
 );
 
 -- Use ordinary auth.users rows exactly as Supabase documents for RLS testing. The
