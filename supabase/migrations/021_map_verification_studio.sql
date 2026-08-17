@@ -485,4 +485,3 @@ end;
 $$;
 revoke execute on function public.rebase_map_verification_session(uuid, text, jsonb) from public, anon;
 grant execute on function public.rebase_map_verification_session(uuid, text, jsonb) to authenticated;
-
