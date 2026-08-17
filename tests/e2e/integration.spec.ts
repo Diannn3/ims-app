@@ -44,14 +44,14 @@ test.describe('seeded local Supabase integration', () => {
     await professor.click();
 
     await expect(page.getByRole('heading', { name: 'Prof. Demo Alpha' })).toBeVisible();
-    await expect(page.getByText('MB 205', { exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'MB 205', exact: true })).toBeVisible();
     await expect(page.getByText('Consultation hours', { exact: true })).toBeVisible();
 
     await page.goto('/room/mb304');
     await expect(page.getByText('DEMO 101', { exact: true }).first()).toBeVisible();
     await page.getByRole('link', { name: 'View on map' }).click();
     await expect(page).toHaveURL(/\/map\?room=mb304/);
-    await expect(page.getByText('MB 304', { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'MB 304', exact: true })).toBeVisible();
   });
 
   test('unpublished synthetic records remain invisible to public academic reads', async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe('seeded local Supabase integration', () => {
 
   test('ordinary public browsing never requires a staff session', async ({ page }) => {
     await page.goto('/academics');
-    await expect(page.getByRole('heading', { name: /Academics/i }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Academic hub', exact: true })).toBeVisible();
     await expect(page).not.toHaveURL(/staff\/sign-in/);
   });
 

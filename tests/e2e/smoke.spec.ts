@@ -1,4 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function waitForMapReady(page: Page) {
+  const viewport = page.getByRole('region', { name: /interactive map viewport/i });
+  await expect(viewport).toHaveAttribute('data-map-ready', 'true');
+}
 
 test('public shell exposes the core navigation and accessible main target', async ({ page }) => {
   await page.goto('/');
@@ -11,7 +16,8 @@ test('public shell exposes the core navigation and accessible main target', asyn
 
 test('room finder can deep-link to MB 304', async ({ page }) => {
   await page.goto('/map?room=mb304');
-  await expect(page.getByText('MB 304', { exact: true }).first()).toBeVisible();
+  await waitForMapReady(page);
+  await expect(page.locator('.destination-panel h2.identifier').filter({ hasText: 'MB 304' })).toBeVisible();
 });
 
 test('universal search resolves compact room IDs without an academic database', async ({ page }) => {
@@ -26,6 +32,7 @@ test('grade calculator is available without authentication', async ({ page }) =>
 });
 
 test('public academic pages render a deliberate empty state when Supabase is not configured', async ({ page }) => {
+  test.skip(process.env.INTEGRATION_SUPABASE === '1', 'The seeded integration project should render published academic data instead.');
   await page.goto('/academics');
   await expect(page.getByText(/not connected|no published/i).first()).toBeVisible();
 });

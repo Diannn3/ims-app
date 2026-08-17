@@ -1,4 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function waitForMapReady(page: Page) {
+  const viewport = page.getByRole('region', { name: /interactive map viewport/i });
+  await expect(viewport).toHaveAttribute('data-map-ready', 'true');
+  return viewport;
+}
 
 test('keyboard users encounter the skip link before application navigation', async ({ page }) => {
   await page.goto('/');
@@ -12,7 +18,7 @@ test('keyboard users encounter the skip link before application navigation', asy
 test('the active primary destination is exposed with aria-current', async ({ page }) => {
   await page.goto('/map');
 
-  const activeMapLinks = page.locator('a[aria-current="page"]').filter({ hasText: 'Map' });
+  const activeMapLinks = page.locator('a[aria-current="page"]:visible').filter({ hasText: 'Map' });
   await expect(activeMapLinks.first()).toBeVisible();
   expect(await activeMapLinks.count()).toBeGreaterThanOrEqual(1);
 });
@@ -30,7 +36,8 @@ test('the application shell does not introduce root horizontal overflow', async 
 
 test('a selected third-floor room can produce a directional cross-floor route entirely client-side', async ({ page }) => {
   await page.goto('/map?room=mb304');
-  await expect(page.getByText('MB 304', { exact: true }).first()).toBeVisible();
+  await waitForMapReady(page);
+  await expect(page.locator('.destination-panel h2.identifier').filter({ hasText: 'MB 304' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Directions' }).click();
 
@@ -48,7 +55,7 @@ test('a selected third-floor room can produce a directional cross-floor route en
 test('map camera exposes keyboard zoom and fit without requiring drag', async ({ page }) => {
   await page.goto('/map');
 
-  const viewport = page.getByRole('region', { name: /Ground Floor interactive map viewport/i });
+  const viewport = await waitForMapReady(page);
   const svg = viewport.locator('svg');
   await viewport.focus();
 
@@ -65,9 +72,10 @@ test('map camera exposes keyboard zoom and fit without requiring drag', async ({
 test('room search switches floors and focuses the selected room', async ({ page }) => {
   await page.goto('/map');
 
+  await waitForMapReady(page);
   const search = page.getByRole('searchbox', { name: 'Search the Math Building' });
   await search.fill('MB 304');
-  await page.getByRole('button', { name: /MB 304/ }).first().click();
+  await page.getByRole('option', { name: /MB 304/ }).first().click();
 
   await expect(page.getByRole('button', { name: '3rd' })).toHaveAttribute('aria-pressed', 'true');
   const viewport = page.getByRole('region', { name: /Third Floor interactive map viewport/i });
@@ -78,14 +86,15 @@ test('mobile selected-place information stays in a collapsible bottom sheet', as
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/map?room=mb209');
 
-  const toggle = page.getByRole('button', { name: 'Expand selected place details' });
+  await waitForMapReady(page);
+  const panel = page.getByLabel('Selected destination');
+  const toggle = panel.getByRole('button', { name: 'Expand selected place details' });
   await expect(toggle).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
-  const panel = page.getByLabel('Selected destination');
   await expect(panel).toHaveCSS('position', 'sticky');
 
   await toggle.click();
-  await expect(page.getByRole('button', { name: 'Collapse selected place details' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel.getByRole('button', { name: 'Collapse selected place details' })).toHaveAttribute('aria-expanded', 'true');
   await expect(panel.getByRole('link', { name: 'Room details' })).toBeVisible();
 });
