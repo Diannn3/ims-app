@@ -14,6 +14,8 @@
     routeNodeIds = [],
     routeSegmentIndex = 0,
     routeSegmentCount = 1,
+    highlightNodeIds = [],
+    completedNodeIds = [],
     viewBox = { x: 0, y: 0, width: building.canvas.width, height: building.canvas.height },
     detailLevel = 'overview',
     onSelect = () => {}
@@ -23,6 +25,8 @@
     routeNodeIds?: string[];
     routeSegmentIndex?: number;
     routeSegmentCount?: number;
+    highlightNodeIds?: string[];
+    completedNodeIds?: string[];
     viewBox?: MapViewBox;
     detailLevel?: DetailLevel;
     onSelect?: (spaceId: string) => void;
@@ -36,12 +40,16 @@
   const selectedSpace = $derived(floorSpaces.find((space) => space.id === selectedSpaceId) ?? null);
   const routeFloorNodes = $derived(
     routeNodeIds
-      .map((id) => nodeIndex.get(id))
-      .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
+      .flatMap((id) => {
+        const node = nodeIndex.get(id);
+        return node && node.floor === floor ? [node] : [];
+      })
   );
   const routeSegments = $derived(
     routeFloorNodes.slice(1).map((to, index) => ({ from: routeFloorNodes[index], to }))
   );
+  const highlightNodeSet = $derived(new Set(highlightNodeIds));
+  const completedNodeSet = $derived(new Set(completedNodeIds));
   const routeStart = $derived(routeFloorNodes.length ? routeFloorNodes[0] : null);
   const routeEnd = $derived(routeFloorNodes.length ? routeFloorNodes[routeFloorNodes.length - 1] : null);
   const isFirstRouteFloor = $derived(routeSegmentIndex === 0);
@@ -240,6 +248,8 @@
             y2={segment.to.y}
           />
           <line
+            class:route-highlight={highlightNodeSet.has(segment.from.id) || highlightNodeSet.has(segment.to.id)}
+            class:route-completed={completedNodeSet.has(segment.from.id) && completedNodeSet.has(segment.to.id)}
             class="route"
             x1={segment.from.x}
             y1={segment.from.y}
@@ -288,6 +298,7 @@
 
     {#each visual.exits as marker}
       <g class={`exit-marker ${marker.kind}`} transform={`translate(${marker.x} ${marker.y})`} aria-hidden="true">
+        <title>{marker.label} — physical verification pending</title>
         <circle r="21" />
         {#if marker.kind === 'emergency'}
           <path class="exit-person" d="M -2 -10 a4 4 0 1 0 0.1 0 M -3 -3 l7 3 5 -6 M 1 0 l-5 9 M 3 1 l6 8 M 8 -11 v18" />
@@ -300,6 +311,7 @@
       </g>
     {/each}
 
+    {#if (visual.verificationStatus as string) === 'site-verified'}
     <g class="compass" transform={`translate(${visual.compass.x} ${visual.compass.y})`} aria-hidden="true">
       <circle r="37" />
       <circle r="5" />
@@ -312,6 +324,7 @@
       <text x="0" y="53" text-anchor="middle">S</text>
       <text x="-47" y="4" text-anchor="middle">W</text>
     </g>
+    {/if}
   </svg>
 
   <div class="legend" aria-label="Map legend">
@@ -321,7 +334,7 @@
     <span><i class="origin-dot"></i> Route origin</span>
     <span><i class="transition-dot"></i> Change floor</span>
     <span><i class="destination-dot"></i> Destination</span>
-    <span><i class="exit-dot"></i> Emergency exit</span>
+    <span><i class="exit-dot"></i> Reference marker · unverified</span>
   </div>
 </div>
 
@@ -518,6 +531,16 @@
     stroke-width: 8;
   }
 
+  .route.route-highlight {
+    stroke: var(--brand-yellow, #faf807);
+    stroke-width: 10;
+  }
+
+  .route.route-completed {
+    stroke: rgb(255 255 255 / 0.62);
+    stroke-width: 7;
+  }
+
   .route-arrow {
     fill: var(--brand-green, #17960e);
     stroke: #fff;
@@ -566,12 +589,11 @@
   }
 
   .exit-marker circle {
-    fill: var(--brand-green, #17960e);
+    fill: rgb(255 255 255 / 0.22);
     stroke: #fff;
-    stroke-width: 4;
+    stroke-width: 3;
+    stroke-dasharray: 6 4;
   }
-
-  .exit-marker.entrance circle { fill: var(--brand-yellow, #faf807); }
 
   .exit-marker path {
     fill: none;
@@ -581,7 +603,7 @@
     stroke-linejoin: round;
   }
 
-  .exit-marker.entrance path { stroke: var(--brand-blue-ink, #005f91); }
+  .exit-marker.entrance path { stroke: #fff; }
 
   .exit-marker text {
     fill: #fff;

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MAP_CANVAS_BOUNDS,
   boundsFromPoints,
+  cameraBoundsForAspect,
   clampViewBox,
   fitBounds,
   focusRect,
@@ -56,5 +57,11 @@ describe('map camera', () => {
   it('pans without escaping the canvas', () => {
     const start = { x: 200, y: 200, width: 500, height: 320 };
     expect(panViewBox(start, -1000, -1000)).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it('expands the legal camera on portrait screens without distorting the floor', () => {
+    const camera = cameraBoundsForAspect(MAP_CANVAS_BOUNDS, 0.55);
+    expect(camera.height).toBeGreaterThan(MAP_CANVAS_BOUNDS.height);
+    expect(camera.width / camera.height).toBeCloseTo(0.55, 2);
   });
 });

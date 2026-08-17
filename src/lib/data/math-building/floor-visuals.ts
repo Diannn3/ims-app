@@ -15,7 +15,7 @@ export type FloorVisual = {
   exits: FloorExitMarker[];
   compass: { x: number; y: number };
   contentBounds: MapBounds;
-  verificationStatus: 'reference-matched';
+  verificationStatus: 'prototype' | 'reference-matched' | 'site-verified';
 };
 
 /**
@@ -36,8 +36,8 @@ export const floorVisuals = {
     hallwayPath:
       'M 58 336 H 118 V 246 H 1008 V 276 H 1076 V 312 H 1104 V 442 H 1132 V 505 H 1010 V 448 H 838 V 522 H 625 V 448 H 516 V 521 H 318 V 448 H 188 V 425 H 118 V 420 H 58 Z',
     exits: [
-      { x: 70, y: 382, label: 'Main entrance', kind: 'entrance' },
-      { x: 1087, y: 328, label: 'Emergency exit', kind: 'emergency' }
+      { x: 70, y: 382, label: 'Reference entrance marker', kind: 'entrance' },
+      { x: 1087, y: 328, label: 'Reference exit marker', kind: 'emergency' }
     ],
     compass: { x: 1090, y: 655 },
     contentBounds: { x: 42, y: 120, width: 1110, height: 525 },
@@ -49,8 +49,8 @@ export const floorVisuals = {
     hallwayPath:
       'M 78 250 H 1020 V 278 H 1076 V 312 H 1100 V 450 H 1018 V 456 H 918 V 448 H 254 V 458 H 106 V 448 H 78 Z',
     exits: [
-      { x: 101, y: 286, label: 'West emergency exit', kind: 'emergency' },
-      { x: 1078, y: 331, label: 'East emergency exit', kind: 'emergency' }
+      { x: 101, y: 286, label: 'West reference exit marker', kind: 'emergency' },
+      { x: 1078, y: 331, label: 'East reference exit marker', kind: 'emergency' }
     ],
     compass: { x: 1090, y: 655 },
     contentBounds: { x: 68, y: 124, width: 1052, height: 515 },
@@ -62,8 +62,8 @@ export const floorVisuals = {
     hallwayPath:
       'M 78 250 H 1020 V 278 H 1076 V 312 H 1100 V 450 H 1018 V 456 H 918 V 448 H 254 V 458 H 106 V 448 H 78 Z',
     exits: [
-      { x: 101, y: 286, label: 'West emergency exit', kind: 'emergency' },
-      { x: 1078, y: 331, label: 'East emergency exit', kind: 'emergency' }
+      { x: 101, y: 286, label: 'West reference exit marker', kind: 'emergency' },
+      { x: 1078, y: 331, label: 'East reference exit marker', kind: 'emergency' }
     ],
     compass: { x: 1090, y: 655 },
     contentBounds: { x: 68, y: 124, width: 1052, height: 515 },

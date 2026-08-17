@@ -4,6 +4,7 @@
   import graphData from '$lib/data/math-building/graph.json';
   import { findRoute } from '$lib/domain/navigation/a-star';
   import { splitRouteByFloor } from '$lib/domain/navigation/route-builder';
+  import { buildRouteInstructions } from '$lib/domain/navigation/route-instructions';
   import { spaces, floorDisplayName } from '$lib/domain/navigation/spaces';
   import { getLocationAnchorByNode } from '$lib/domain/navigation/anchors';
   import type { FloorId, GraphData } from '$lib/domain/navigation/types';
@@ -23,6 +24,8 @@
   let floor = $state<FloorId>(initialSpace?.floor ?? 'ground');
   let selectedSpaceId = $state<string | null>(initialSpace?.id ?? null);
   let query = $state('');
+  let activeResultIndex = $state(-1);
+  let activeInstructionIndex = $state(0);
   let mobileSheetExpanded = $state(false);
   let activeRoute = $state<ReturnType<typeof findRoute>>(
     page.url.searchParams.get('route') === '1' && initialSpace?.doorNode
@@ -47,9 +50,21 @@
           .slice(0, 7)
   );
   const segments = $derived(activeRoute ? splitRouteByFloor(graph, activeRoute) : []);
+  const routeInstructions = $derived(activeRoute ? buildRouteInstructions(graph, activeRoute, {
+    destinationLabel: selected?.name,
+    startLabel: startAnchor?.shortLabel ?? startNode.label
+  }) : []);
+  const activeInstruction = $derived(routeInstructions[activeInstructionIndex] ?? null);
+  const activeResultId = $derived(activeResultIndex >= 0 && results[activeResultIndex] ? `map-result-${results[activeResultIndex].id}` : undefined);
+  const activeInstructionNodeIds = $derived(activeInstruction?.nodeIds ?? []);
+  const completedInstructionNodeIds = $derived(
+    routeInstructions.slice(0, activeInstructionIndex).flatMap((instruction) => instruction.nodeIds)
+  );
   const currentSegmentIndex = $derived(segments.findIndex((segment) => segment.floor === floor));
   const routeNodeIdsForFloor = $derived(
-    currentSegmentIndex >= 0 ? segments[currentSegmentIndex].points.map((node) => node.id) : []
+    currentSegmentIndex >= 0
+      ? segments[currentSegmentIndex].points.map((node) => node.id)
+      : []
   );
   const floorSpaces = $derived(spaces.filter((space) => space.floor === floor));
 
@@ -58,25 +73,54 @@
     const space = spaces.find((item) => item.id === id);
     if (space) floor = space.floor;
     query = '';
+    activeResultIndex = -1;
     activeRoute = null;
+    activeInstructionIndex = 0;
     mobileSheetExpanded = false;
   }
 
   function chooseFloor(nextFloor: FloorId) {
     floor = nextFloor;
     mobileSheetExpanded = false;
+    const matching = routeInstructions.findIndex((instruction) => instruction.floor === nextFloor);
+    if (matching >= 0) activeInstructionIndex = matching;
   }
 
   function startRoute() {
     if (!selected?.doorNode) return;
     activeRoute = findRoute(graph, startNode.id, selected.doorNode);
+    activeInstructionIndex = 0;
     if (activeRoute) floor = startNode.floor;
     mobileSheetExpanded = false;
   }
 
   function clearRoute() {
     activeRoute = null;
+    activeInstructionIndex = 0;
     if (selected) floor = selected.floor;
+  }
+
+  function onSearchKeydown(event: KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      activeResultIndex = results.length ? (activeResultIndex + 1) % results.length : -1;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      activeResultIndex = results.length ? (activeResultIndex - 1 + results.length) % results.length : -1;
+    } else if (event.key === 'Enter' && activeResultIndex >= 0 && results[activeResultIndex]) {
+      event.preventDefault();
+      selectSpace(results[activeResultIndex].id);
+    } else if (event.key === 'Escape') {
+      activeResultIndex = -1;
+      query = '';
+    }
+  }
+
+  function setInstruction(index: number) {
+    if (!routeInstructions.length) return;
+    activeInstructionIndex = Math.min(routeInstructions.length - 1, Math.max(0, index));
+    const instruction = routeInstructions[activeInstructionIndex];
+    if (instruction) floor = instruction.floor;
   }
 </script>
 
@@ -107,12 +151,23 @@
   </header>
 
   <section class="map-command-bar" aria-label="Map search and floor controls">
-    <div class="map-search-wrap">
+    <div
+      class="map-search-wrap"
+      role="combobox"
+      aria-label="Search the Math Building"
+      aria-autocomplete="list"
+      aria-controls="map-search-results"
+      aria-expanded={results.length > 0}
+      aria-activedescendant={activeResultId}
+      tabindex="-1"
+    >
       <label class="visually-hidden" for="room-search">Search the Math Building</label>
       <input
         id="room-search"
         bind:value={query}
         type="search"
+        aria-autocomplete="list"
+        onkeydown={onSearchKeydown}
         maxlength="80"
         placeholder="Search MB 304, Math Clinic, CR…"
         autocomplete="off"
@@ -120,9 +175,9 @@
       />
 
       {#if results.length}
-        <div class="results" aria-label="Room search results">
-          {#each results as result}
-            <button type="button" onclick={() => selectSpace(result.id)}>
+        <div class="results" id="map-search-results" role="listbox" aria-label="Room search results">
+          {#each results as result, index}
+            <button id={`map-result-${result.id}`} type="button" role="option" aria-selected={activeResultIndex === index} class:active={activeResultIndex === index} onclick={() => selectSpace(result.id)}>
               <span>
                 <strong class="identifier">{result.name}</strong>
                 {#if result.subtitle}<small>{result.subtitle}</small>{/if}
@@ -194,11 +249,15 @@
         routeNodeIds={routeNodeIdsForFloor}
         routeSegmentIndex={Math.max(0, currentSegmentIndex)}
         routeSegmentCount={Math.max(1, segments.length)}
+        focusNodeIds={activeInstructionNodeIds}
+        highlightNodeIds={activeInstructionNodeIds}
+        completedNodeIds={completedInstructionNodeIds}
+        overlayBottomInsetPx={selected ? (mobileSheetExpanded ? 210 : 112) : 0}
         onSelect={selectSpace}
       />
 
       {#if activeRoute}
-        <div class="route-strip" aria-label="Active route floor segments">
+        <div class="route-strip" role="region" aria-label="Active route floor segments">
           <div class="route-strip__summary">
             <span class="route-mark" aria-hidden="true"></span>
             <span>
@@ -226,6 +285,34 @@
             </div>
           {/if}
         </div>
+        {#if routeInstructions.length}
+          <section class="route-guide" aria-label="Turn-by-turn route instructions">
+            <div class="route-guide__header">
+              <span>Step {activeInstructionIndex + 1} of {routeInstructions.length}</span>
+              <div>
+                <button type="button" onclick={() => setInstruction(activeInstructionIndex - 1)} disabled={activeInstructionIndex === 0}>Previous</button>
+                <button type="button" onclick={() => setInstruction(activeInstructionIndex + 1)} disabled={activeInstructionIndex >= routeInstructions.length - 1}>Next</button>
+              </div>
+            </div>
+            {#if activeInstruction}
+              <div class="route-guide__instruction">
+                <strong>{activeInstruction.title}</strong>
+                {#if activeInstruction.detail}<p>{activeInstruction.detail}</p>{/if}
+              </div>
+            {/if}
+            <ol class="route-guide__steps">
+              {#each routeInstructions as instruction, index}
+                <li class:active={index === activeInstructionIndex}>
+                  <button type="button" onclick={() => setInstruction(index)} aria-current={index === activeInstructionIndex ? 'step' : undefined}>
+                    <span>{index + 1}</span>
+                    <strong>{instruction.title}</strong>
+                    <small>{floorDisplayName(instruction.floor)}</small>
+                  </button>
+                </li>
+              {/each}
+            </ol>
+          </section>
+        {/if}
       {/if}
     </section>
   </div>
@@ -443,7 +530,8 @@
   }
 
   .results button:hover,
-  .results button:focus-visible { background: var(--surface-blue); }
+  .results button:focus-visible,
+  .results button.active { background: var(--surface-blue); }
   .results button:last-child { border-bottom: 0; }
 
   .results button > span:first-child {
@@ -588,6 +676,39 @@
     background: var(--surface-blue);
     box-shadow: inset 0 -3px 0 var(--brand-yellow);
   }
+
+  .route-guide {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface-subtle);
+  }
+
+  .route-guide__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    color: var(--muted-strong);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .route-guide__header > div { display: flex; gap: 4px; }
+  .route-guide__header button { min-height: 34px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--brand-blue-ink); font-weight: 750; }
+  .route-guide__header button:disabled { opacity: .45; }
+  .route-guide__instruction { display: grid; gap: 2px; padding: 10px 0; }
+  .route-guide__instruction strong { color: var(--ink-strong); font-size: 14px; }
+  .route-guide__instruction p { margin: 0; color: var(--muted); font-size: 11px; }
+  .route-guide__steps { margin: 0; padding: 0; display: grid; gap: 3px; list-style: none; }
+  .route-guide__steps button { width: 100%; min-height: 42px; padding: 5px 7px; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 6px; align-items: center; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--muted-strong); text-align: left; }
+  .route-guide__steps button:hover, .route-guide__steps li.active button { border-color: var(--line-strong); background: var(--surface); color: var(--ink-strong); }
+  .route-guide__steps button > span { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--brand-blue-ink); color: #fff; font-size: 10px; font-weight: 850; }
+  .route-guide__steps strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+  .route-guide__steps small { color: var(--muted); font-size: 9px; }
 
   .directory { min-width: 0; }
   .directory--desktop { display: none; }

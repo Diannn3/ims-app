@@ -1,11 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import MapCanvas from './MapCanvas.svelte';
+  import building from '$lib/data/math-building/building.json';
   import graphData from '$lib/data/math-building/graph.json';
   import { floorVisuals } from '$lib/data/math-building/floor-visuals';
   import {
-    MAP_CANVAS_BOUNDS,
+    applyViewportInsets,
     boundsFromPoints,
+    cameraBoundsForAspect,
+    canvasBounds,
+    ensureRectVisible,
     fitBounds,
     focusRect,
     mapPointFromViewport,
@@ -24,6 +28,10 @@
     routeNodeIds = [],
     routeSegmentIndex = 0,
     routeSegmentCount = 1,
+    focusNodeIds = [],
+    highlightNodeIds = [],
+    completedNodeIds = [],
+    overlayBottomInsetPx = 0,
     onSelect = () => {}
   }: {
     floor: FloorId;
@@ -31,66 +39,115 @@
     routeNodeIds?: string[];
     routeSegmentIndex?: number;
     routeSegmentCount?: number;
+    focusNodeIds?: string[];
+    highlightNodeIds?: string[];
+    completedNodeIds?: string[];
+    overlayBottomInsetPx?: number;
     onSelect?: (spaceId: string) => void;
   } = $props();
 
   const graph = graphData as GraphData;
   const nodeIndex = new Map(graph.nodes.map((node) => [node.id, node]));
+  const mapBounds = canvasBounds(building.canvas.width, building.canvas.height);
 
   let viewportEl = $state<HTMLDivElement | null>(null);
   let viewportWidth = $state(0);
-  let camera = $state<MapViewBox>({ ...MAP_CANVAS_BOUNDS });
+  let viewportHeight = $state(0);
+  let camera = $state<MapViewBox>({ ...mapBounds });
   let dragPointerId = $state<number | null>(null);
   let dragX = $state(0);
   let dragY = $state(0);
   let lastFloor = $state<FloorId | null>(null);
   let lastSelected = $state<string | null>(null);
   let lastRouteKey = $state('');
+  let lastFocusKey = $state('');
+  let cameraInteracted = $state(false);
+  let mapReady = $state(false);
 
   const selectedSpace = $derived(spaces.find((space) => space.id === selectedSpaceId) ?? null);
   const routeNodes = $derived(
     routeNodeIds
-      .map((id) => nodeIndex.get(id))
-      .filter((node): node is NonNullable<typeof node> => Boolean(node) && node.floor === floor)
+      .flatMap((id) => {
+        const node = nodeIndex.get(id);
+        return node && node.floor === floor ? [node] : [];
+      })
+  );
+  const focusNodes = $derived(
+    focusNodeIds
+      .flatMap((id) => {
+        const node = nodeIndex.get(id);
+        return node && node.floor === floor ? [node] : [];
+      })
   );
   const routeBounds = $derived(boundsFromPoints(routeNodes));
-  const zoomPercent = $derived(viewBoxZoomPercent(camera));
+  const focusBounds = $derived(boundsFromPoints(focusNodes));
+  const viewportAspect = $derived(viewportWidth > 0 && viewportHeight > 0 ? viewportWidth / viewportHeight : 0);
+  const cameraBounds = $derived(viewportAspect ? cameraBoundsForAspect(mapBounds, viewportAspect) : mapBounds);
+  const cameraInsets = $derived({
+    top: 8,
+    right: viewportWidth < 760 ? 8 : 92,
+    bottom: viewportWidth > 0 && viewportWidth < 760 ? Math.max(8, overlayBottomInsetPx) : 8,
+    left: 8
+  });
+  const zoomPercent = $derived(viewBoxZoomPercent(camera, mapBounds));
   const detailLevel = $derived(
     viewportWidth > 0 && camera.width / viewportWidth <= 1.7 ? 'detail' : 'overview'
   );
 
   function fitFloor() {
-    camera = fitBounds(floorVisuals[floor].contentBounds, {
+    camera = applyViewportInsets(fitBounds(floorVisuals[floor].contentBounds, {
       padding: 38,
       minWidth: 920,
-      minHeight: 560
-    });
+      minHeight: 560,
+      canvas: cameraBounds,
+      aspectRatio: viewportAspect || undefined
+    }), { width: viewportWidth, height: viewportHeight }, cameraInsets, cameraBounds);
   }
 
   function focusSelected() {
     if (!selectedSpace || selectedSpace.floor !== floor) return;
-    camera = focusRect(selectedSpace.geometry, 72);
+    camera = applyViewportInsets(focusRect(selectedSpace.geometry, {
+      padding: 72,
+      canvas: cameraBounds,
+      aspectRatio: viewportAspect || undefined
+    }), { width: viewportWidth, height: viewportHeight }, cameraInsets, cameraBounds);
   }
 
   function fitRoute() {
     if (!routeBounds) return;
-    camera = fitBounds(routeBounds, {
+    camera = applyViewportInsets(fitBounds(routeBounds, {
       padding: 105,
       minWidth: 520,
-      minHeight: 330
-    });
+      minHeight: 330,
+      canvas: cameraBounds,
+      aspectRatio: viewportAspect || undefined
+    }), { width: viewportWidth, height: viewportHeight }, cameraInsets, cameraBounds);
+  }
+
+  function fitFocus() {
+    if (!focusBounds) return;
+    camera = applyViewportInsets(fitBounds(focusBounds, {
+      padding: 92,
+      minWidth: 470,
+      minHeight: 300,
+      canvas: cameraBounds,
+      aspectRatio: viewportAspect || undefined
+    }), { width: viewportWidth, height: viewportHeight }, cameraInsets, cameraBounds);
   }
 
   function zoomIn() {
-    camera = zoomViewBox(camera, 0.78);
+    cameraInteracted = true;
+    camera = zoomViewBox(camera, 0.78, cameraBounds);
   }
 
   function zoomOut() {
-    camera = zoomViewBox(camera, 1.28);
+    cameraInteracted = true;
+    camera = zoomViewBox(camera, 1.28, cameraBounds);
   }
 
   function panByFraction(xFraction: number, yFraction: number) {
-    camera = panViewBox(camera, camera.width * xFraction, camera.height * yFraction);
+    cameraInteracted = true;
+    camera = panViewBox(camera, camera.width * xFraction, camera.height * yFraction, cameraBounds);
   }
 
   function onViewportKeydown(event: KeyboardEvent) {
@@ -152,9 +209,22 @@
     // Ctrl+wheel is commonly browser/page zoom. Do not intercept it.
     if (event.ctrlKey || !viewportEl) return;
     event.preventDefault();
-    const rect = viewportEl.getBoundingClientRect();
-    const anchor = mapPointFromViewport(event.clientX, event.clientY, rect, camera);
-    camera = zoomViewBoxAt(camera, event.deltaY < 0 ? 0.86 : 1.16, anchor);
+    cameraInteracted = true;
+    const svg = viewportEl.querySelector('svg');
+    const matrix = svg?.getScreenCTM();
+    let anchor = { x: camera.x + camera.width / 2, y: camera.y + camera.height / 2 };
+    if (matrix && typeof DOMPoint !== 'undefined') {
+      try {
+        const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+        anchor = { x: point.x, y: point.y };
+      } catch {
+        // Fall through to the ratio-based fallback below.
+      }
+    } else {
+      const rect = viewportEl.getBoundingClientRect();
+      anchor = mapPointFromViewport(event.clientX, event.clientY, rect, camera);
+    }
+    camera = zoomViewBoxAt(camera, event.deltaY < 0 ? 0.86 : 1.16, { x: anchor.x, y: anchor.y }, cameraBounds);
   }
 
   function isInteractiveTarget(target: EventTarget | null) {
@@ -163,6 +233,7 @@
 
   function onPointerDown(event: PointerEvent) {
     if (event.button !== 0 || isInteractiveTarget(event.target)) return;
+    cameraInteracted = true;
     dragPointerId = event.pointerId;
     dragX = event.clientX;
     dragY = event.clientY;
@@ -182,7 +253,8 @@
     camera = panViewBox(
       camera,
       -(deltaClientX / rect.width) * camera.width,
-      -(deltaClientY / rect.height) * camera.height
+      -(deltaClientY / rect.height) * camera.height,
+      cameraBounds
     );
   }
 
@@ -195,46 +267,67 @@
 
   $effect(() => {
     const routeKey = routeNodeIds.join('|');
+    const focusKey = focusNodeIds.join('|');
 
     if (floor !== lastFloor) {
       lastFloor = floor;
       lastSelected = selectedSpaceId;
       lastRouteKey = routeKey;
-      if (routeKey) fitRoute();
+      if (focusKey) fitFocus();
+      else if (routeKey) fitRoute();
       else if (selectedSpace?.floor === floor) focusSelected();
       else fitFloor();
       return;
     }
 
+    if (focusKey !== lastFocusKey) {
+      lastFocusKey = focusKey;
+      if (focusKey) fitFocus();
+      else if (routeKey) fitRoute();
+      else if (selectedSpace?.floor === floor) focusSelected();
+      else fitFloor();
+    }
+
     if (routeKey !== lastRouteKey) {
       lastRouteKey = routeKey;
-      if (routeKey) fitRoute();
+      if (!focusKey && routeKey) fitRoute();
       else if (selectedSpace?.floor === floor) focusSelected();
       else fitFloor();
     }
 
     if (selectedSpaceId !== lastSelected) {
       lastSelected = selectedSpaceId;
-      if (!routeKey && selectedSpace?.floor === floor) focusSelected();
+      if (!routeKey && !focusKey && selectedSpace?.floor === floor) focusSelected();
     }
   });
 
   onMount(() => {
     if (!viewportEl || typeof ResizeObserver === 'undefined') return;
 
-    const updateWidth = () => {
+    const updateSize = () => {
       if (!viewportEl) return;
-      viewportWidth = viewportEl.getBoundingClientRect().width;
+      const rect = viewportEl.getBoundingClientRect();
+      const changed = Math.abs(rect.width - viewportWidth) > 1 || Math.abs(rect.height - viewportHeight) > 1;
+      viewportWidth = rect.width;
+      viewportHeight = rect.height;
+      if (changed) {
+        if (cameraInteracted) return;
+        if (focusBounds) fitFocus();
+        else if (routeBounds) fitRoute();
+        else if (selectedSpace?.floor === floor) focusSelected();
+        else fitFloor();
+      }
     };
 
-    updateWidth();
-    const observer = new ResizeObserver(() => requestAnimationFrame(updateWidth));
+    updateSize();
+    mapReady = true;
+    const observer = new ResizeObserver(() => requestAnimationFrame(updateSize));
     observer.observe(viewportEl);
     return () => observer.disconnect();
   });
 </script>
 
-<div class="map-viewport-shell">
+<div class="map-viewport-shell" style={`--map-overlay-bottom: ${Math.max(0, overlayBottomInsetPx)}px`}>
   <div class="map-toolbar" aria-label="Map camera controls">
     <button class="icon-button" type="button" onclick={zoomOut} aria-label="Zoom map out" title="Zoom out">−</button>
     <span aria-live="polite">{zoomPercent}%</span>
@@ -257,10 +350,15 @@
     keyboard-selectable inside the map.
   </p>
 
+  <!-- The map viewport is a keyboard-operable landmark; Svelte's static a11y
+       rule does not recognise the deliberate tabindex/gesture surface. -->
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
     class="viewport"
     class:dragging={dragPointerId !== null}
     bind:this={viewportEl}
+    data-map-ready={mapReady ? 'true' : 'false'}
     tabindex="0"
     role="region"
     aria-label={`${floorVisuals[floor].displayLabel} interactive map viewport`}
@@ -278,6 +376,8 @@
       {routeNodeIds}
       {routeSegmentIndex}
       {routeSegmentCount}
+      {highlightNodeIds}
+      {completedNodeIds}
       viewBox={camera}
       {detailLevel}
       {onSelect}
