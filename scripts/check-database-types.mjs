@@ -23,7 +23,13 @@ if (!configuredBin && !existsSync(localBin)) {
 const result = spawnSync(
   bin,
   ['gen', 'types', 'typescript', '--local'],
-  { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+  {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    // Windows resolves npm-installed command shims through cmd.exe. Node's
+    // default spawn mode rejects those .cmd paths with EINVAL otherwise.
+    shell: process.platform === 'win32' && bin.toLowerCase().endsWith('.cmd')
+  }
 );
 
 if (result.error) {

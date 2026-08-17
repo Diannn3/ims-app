@@ -11,6 +11,9 @@ function runCommand(label, command, args, options = {}) {
   const result = spawnSync(command, args, {
     stdio: 'inherit',
     env: process.env,
+    // Windows cannot spawn a .cmd shim through the native process API without
+    // a shell. Keep the command explicit so this remains portable in CI.
+    shell: process.platform === 'win32' && command.toLowerCase().endsWith('.cmd'),
     ...options
   });
   if (result.error) {

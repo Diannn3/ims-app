@@ -1,6 +1,7 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { createClient } from '@supabase/supabase-js';
 import { getLocalSupabaseStatus } from './lib/local-supabase.mjs';
 
@@ -89,16 +90,26 @@ function assignLocalProfile(userId, fixture) {
     $ims_fixture$;
   `;
 
-  const result = spawnSync(
-    localSupabaseBinary(),
-    ['db', 'query', '--local', '--agent=no', sql],
-    {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 20_000
-    }
-  );
+  const tempDir = mkdtempSync(join(tmpdir(), 'ims-integration-profile-'));
+  const sqlPath = join(tempDir, 'profile.sql');
+  writeFileSync(sqlPath, sql, 'utf8');
+
+  let result;
+  try {
+    result = spawnSync(
+      localSupabaseBinary(),
+      ['db', 'query', '--local', '--agent=no', '--file', sqlPath],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 20_000,
+        shell: process.platform === 'win32' && localSupabaseBinary().toLowerCase().endsWith('.cmd')
+      }
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 
   if (result.error) {
     throw new Error(`Could not run local profile fixture SQL: ${result.error.message}`);

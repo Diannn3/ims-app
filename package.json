@@ -10,7 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "generate:maps": "node scripts/generate-svgs.mjs",
     "verify:data": "node scripts/verify-data.mjs",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run src",
     "test:e2e": "playwright test",
     "test:db": "supabase test db",
     "verify:project": "node scripts/verify-project.mjs",
@@ -54,7 +54,7 @@
     "@testing-library/svelte": "5.2.0",
     "svelte": "5.56.0",
     "svelte-check": "4.7.0",
-    "typescript": "^5.0.0",
+    "typescript": "5.9.3",
     "vite": "7.0.0",
     "vitest": "3.2.0",
     "supabase": "2.110.0"

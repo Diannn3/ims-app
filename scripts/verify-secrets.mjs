@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const failures = [];
-const ignoredDirs = new Set(['.git', 'node_modules', '.svelte-kit', 'build', 'validation-evidence', 'playwright-report', 'test-results']);
+const ignoredDirs = new Set(['.git', 'node_modules', '.svelte-kit', 'build', 'validation-evidence', 'playwright-report', 'test-results', '.temp']);
 const binaryExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.zip', '.pdf']);
 const secretPatterns = [
   { label: 'Supabase secret API key', regex: /\bsb_secret_[A-Za-z0-9_-]{12,}\b/g },

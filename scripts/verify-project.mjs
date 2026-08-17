@@ -48,7 +48,19 @@ const required = [
   'tsconfig.domain.json',
   'src/lib/server/admin-errors.ts',
   'scripts/check-database-types.mjs',
-  'supabase/migrations/009_integrity_privacy_hardening.sql'
+  'supabase/migrations/009_integrity_privacy_hardening.sql',
+  'src/lib/domain/navigation/route-instructions.ts',
+  'src/lib/domain/navigation/canonical-revision.ts',
+  'src/lib/domain/map-verification.ts',
+  'src/lib/data-access/map-verification/repository.server.ts',
+  'src/routes/admin/map/+page.server.ts',
+  'src/routes/admin/map/+page.svelte',
+  'src/routes/admin/map/[sessionId]/+page.server.ts',
+  'src/routes/admin/map/[sessionId]/+page.svelte',
+  'src/routes/admin/map/field/[sessionId]/+page.server.ts',
+  'src/routes/admin/map/field/[sessionId]/+page.svelte',
+  'supabase/migrations/021_map_verification_studio.sql',
+  'supabase/tests/database/009_map_verification.test.sql'
 ];
 for (const path of required) assert(existsSync(join(root, path)), `Missing required file: ${path}`);
 
@@ -128,6 +140,25 @@ assert(migration009.includes('public_route_restrictions'), 'Public-safe route re
 assert(migration009.includes('before update on public.consultation_hours'), 'Consultation content edits must pass through the full update guard');
 assert(migration009.includes('nulls not distinct'), 'Source-record identity must treat NULL term IDs as equal');
 
+const migration021 = await text('supabase/migrations/021_map_verification_studio.sql');
+for (const tableName of ['map_verification_sessions', 'map_verification_changes', 'map_verification_evidence', 'map_publish_snapshots']) {
+  assert(migration021.includes(`table public.${tableName}`), `Map verification table is missing: ${tableName}`);
+}
+for (const rpcName of ['create_map_verification_session', 'submit_map_verification_session', 'approve_map_verification_session', 'rebase_map_verification_session']) {
+  assert(migration021.includes(`function public.${rpcName}`), `Map verification RPC is missing: ${rpcName}`);
+}
+assert(migration021.includes('map_verification_checklist_complete'), 'Physical verification checklist must be database-enforced');
+assert(migration021.includes('map_publish_snapshots_immutable'), 'Approved map snapshots must be immutable');
+assert(migration021.includes("'40001'"), 'Map rebases must fail on canonical conflicts');
+
+const mapViewport = await text('src/lib/components/map/MapViewport.svelte');
+assert(mapViewport.includes('getScreenCTM'), 'Map pointer conversion must use SVG screen CTM when available');
+assert(mapViewport.includes('cameraBoundsForAspect'), 'Map camera must be portrait-aware');
+const mapRoute = await text('src/routes/map/+page.svelte');
+assert(mapRoute.includes('buildRouteInstructions'), 'Live map route must include guided instructions');
+assert(mapRoute.includes('role="combobox"'), 'Live map search must expose combobox semantics');
+assert(mapRoute.includes('overlayBottomInsetPx'), 'Live map must reserve space for the selected-room sheet');
+
 const academicRepository = await text('src/lib/data-access/academic/repository.server.ts');
 const forbiddenPublicBaseTables = [
   'spaces', 'academic_terms', 'courses', 'sections', 'section_meetings',
@@ -152,6 +183,7 @@ assert(!csv.includes('input.weekdays.join'), 'Fallback source identity must not 
 
 const packageJson = JSON.parse(await text('package.json'));
 assert(packageJson.devDependencies?.supabase === '2.110.0', 'Project-local Supabase CLI must be pinned exactly');
+assert(typeof packageJson.devDependencies?.typescript === 'string' && /^\d+\.\d+\.\d+$/.test(packageJson.devDependencies.typescript), 'TypeScript must be pinned exactly');
 assert(packageJson.engines?.node === '>=22.0.0', 'Project Node engine must exclude EOL Node 20');
 assert(packageJson.scripts?.gate === 'node scripts/run-validation-gate.mjs', 'Cross-platform validation gate runner must be wired');
 assert(packageJson.scripts?.['verify:sql-security'] === 'node scripts/verify-sql-security.mjs', 'Static SECURITY DEFINER verifier must be wired');

@@ -31,7 +31,8 @@ export function getLocalSupabaseStatus() {
     cwd: process.cwd(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: 20_000
+    timeout: 20_000,
+    shell: process.platform === 'win32' && binary.toLowerCase().endsWith('.cmd')
   });
 
   if (result.error) throw new Error(`Could not run Supabase CLI: ${result.error.message}`);
